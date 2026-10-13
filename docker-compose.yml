@@ -9,11 +9,16 @@
 #      The :8080 is the container port. Public traffic stays on 443.
 #   4. Deploy. The first run creates the MariaDB database and the ERPNext site.
 #      That usually takes 10-20 minutes. Watch the create-site logs.
-#   5. Log in at https://erp.agileclix.com
-#      User: Administrator
-#      Password: Coolify environment variable SERVICE_PASSWORD_64_ADMIN
+#   5. Coolify Production env (example):
+#        SITE_NAME=erp.agileclix.com
+#        SERVICE_PASSWORD_64_ADMIN=admin@erp.com
+#        SERVICE_PASSWORD_64_MARIADB=Admin@123
+#      Redeploy so admin-password-sync runs.
+#   6. Sign in at https://erp.agileclix.com (the field is labeled Email but use the username):
+#        Username: Administrator
+#        Password: SERVICE_PASSWORD_64_ADMIN only (not SERVICE_PASSWORD_64_MARIADB).
 #
-# MariaDB root password: SERVICE_PASSWORD_64_MARIADB (same screen).
+# MariaDB root password (SERVICE_PASSWORD_64_MARIADB) is for the db service only, not ERP login.
 # Do not publish port 3306. The database is only reachable inside this stack.
 # Volumes db-data and sites keep the test database across redeploys.
 #
@@ -96,10 +101,11 @@ services:
         fi
         bench --site "$${SITE_NAME}" set-config host_name "https://$${SITE_NAME}"
         bench --site "$${SITE_NAME}" set-config -p developer_mode 0
-        echo "Site $${SITE_NAME} is ready"
+        bench --site "$${SITE_NAME}" set-admin-password "$${ADMIN_PASSWORD}"
+        echo "Site $${SITE_NAME} is ready (Administrator password matches SERVICE_PASSWORD_64_ADMIN)"
     environment:
       SITE_NAME: ${SITE_NAME:-erp.agileclix.com}
-      ADMIN_PASSWORD: ${SERVICE_PASSWORD_64_ADMIN:?}
+      ADMIN_PASSWORD: ${SERVICE_PASSWORD_64_ADMIN:-admin}
       DB_ROOT_PASSWORD: ${SERVICE_PASSWORD_64_MARIADB:?}
     volumes:
       - sites:/home/frappe/frappe-bench/sites
@@ -107,6 +113,31 @@ services:
     depends_on:
       configurator:
         condition: service_completed_successfully
+      db:
+        condition: service_healthy
+
+  # Runs on every deploy so Administrator matches SERVICE_PASSWORD_64_ADMIN in Coolify.
+  admin-password-sync:
+    image: ${FRAPPE_IMAGE:-frappe/erpnext}:${FRAPPE_VERSION:-v16.50.0}
+    restart: "no"
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        set -euo pipefail
+        if [ ! -f "sites/$${SITE_NAME}/site_config.json" ]; then
+          echo "Site $${SITE_NAME} not created yet; skipping password sync"
+          exit 0
+        fi
+        wait-for-it -t 120 db:3306
+        bench --site "$${SITE_NAME}" set-admin-password "$${ADMIN_PASSWORD}"
+        echo "Administrator password synced for $${SITE_NAME}"
+    environment:
+      SITE_NAME: ${SITE_NAME:-erp.agileclix.com}
+      ADMIN_PASSWORD: ${SERVICE_PASSWORD_64_ADMIN:-admin}
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+    depends_on:
       db:
         condition: service_healthy
 
