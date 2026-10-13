@@ -1,0 +1,7 @@
+# Local Docker only. Docker Compose loads this automatically.
+# Coolify uses docker-compose.yml by itself and does not publish this port.
+
+services:
+  frontend:
+    ports:
+      - "8080:8080"
