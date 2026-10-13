@@ -35,10 +35,12 @@ services:
     entrypoint: ["bash", "-c"]
     command:
       - |
-        set -euo pipefail
+        set -e
         ls -1 apps > sites/apps.txt
-        if [ -d apps/agileclix_branding ] && ! grep -qx agileclix_branding sites/apps.txt; then
-          echo agileclix_branding >> sites/apps.txt
+        if [ -d apps/agileclix_branding ]; then
+          grep -qx agileclix_branding sites/apps.txt 2>/dev/null || echo agileclix_branding >> sites/apps.txt
+          mkdir -p sites/assets/agileclix_branding
+          cp -a apps/agileclix_branding/agileclix_branding/public/. sites/assets/agileclix_branding/
         fi
         bench set-config -g db_host "$$DB_HOST"
         bench set-config -gp db_port "$$DB_PORT"
@@ -46,13 +48,7 @@ services:
         bench set-config -g redis_queue "redis://$$REDIS_QUEUE"
         bench set-config -g redis_socketio "redis://$$REDIS_QUEUE"
         bench set-config -gp socketio_port "$$SOCKETIO_PORT"
-        bench set-config -g proxy_ssl_header X-Forwarded-Proto
-        if ! bench build --app agileclix_branding --production; then
-          echo "bench build failed; copying branding assets into sites/assets"
-          mkdir -p sites/assets/agileclix_branding
-          cp -a apps/agileclix_branding/agileclix_branding/public/. sites/assets/agileclix_branding/
-        fi
-        bench clear-cache
+        bench set-config -g proxy_ssl_header "X-Forwarded-Proto"
     environment:
       DB_HOST: db
       DB_PORT: "3306"
@@ -76,7 +72,7 @@ services:
     entrypoint: ["bash", "-c"]
     command:
       - |
-        set -euo pipefail
+        set -e
         wait-for-it -t 180 db:3306
         wait-for-it -t 120 redis-cache:6379
         wait-for-it -t 120 redis-queue:6379
