@@ -7,6 +7,7 @@ from frappe.defaults import get_user_default
 from frappe.utils import cint
 
 import erpnext.accounts.utils
+from erpnext.startup.branding import enrich_boot_session
 from erpnext.stock.doctype.price_list.price_list import is_price_list_enabled
 
 
@@ -88,6 +89,8 @@ def boot_session(bootinfo):
 			"Accounts Settings", "default_ageing_range"
 		)
 		bootinfo.sysdefaults.repost_allowed_doctypes = frappe.get_hooks("repost_allowed_doctypes")
+
+	enrich_boot_session(bootinfo)
 
 
 def remove_disabled_price_list_defaults(bootinfo):

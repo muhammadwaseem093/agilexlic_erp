@@ -22,13 +22,15 @@
 # Do not publish port 3306. The database is only reachable inside this stack.
 # Volumes db-data and sites keep the test database across redeploys.
 #
-# This stack runs the official frappe/erpnext:v16.50.0 image (stable test target).
-# This git branch is ERPNext 17.0.0-dev and is not what the containers execute.
-# Change FRAPPE_VERSION in Coolify only when you intend to move off that image.
+# Builds AgileClix-branded ERPNext from ./Dockerfile (fork replaces apps/erpnext in the image).
+# Override only if you publish a prebuilt image: AGILECLIX_ERP_IMAGE=myregistry/agileclix-erpnext:v16.50.0
 
 services:
   configurator:
-    image: ${FRAPPE_IMAGE:-frappe/erpnext}:${FRAPPE_VERSION:-v16.50.0}
+    image: ${AGILECLIX_ERP_IMAGE:-agileclix-erpnext:v16.50.0}
+    build:
+      context: .
+      dockerfile: Dockerfile
     restart: "no"
     entrypoint: ["bash", "-c"]
     command:
@@ -60,7 +62,7 @@ services:
         condition: service_healthy
 
   create-site:
-    image: ${FRAPPE_IMAGE:-frappe/erpnext}:${FRAPPE_VERSION:-v16.50.0}
+    image: ${AGILECLIX_ERP_IMAGE:-agileclix-erpnext:v16.50.0}
     restart: "no"
     entrypoint: ["bash", "-c"]
     command:
@@ -118,7 +120,7 @@ services:
 
   # Runs on every deploy so Administrator matches SERVICE_PASSWORD_64_ADMIN in Coolify.
   admin-password-sync:
-    image: ${FRAPPE_IMAGE:-frappe/erpnext}:${FRAPPE_VERSION:-v16.50.0}
+    image: ${AGILECLIX_ERP_IMAGE:-agileclix-erpnext:v16.50.0}
     restart: "no"
     entrypoint: ["bash", "-c"]
     command:
@@ -182,7 +184,7 @@ services:
       retries: 10
 
   backend:
-    image: ${FRAPPE_IMAGE:-frappe/erpnext}:${FRAPPE_VERSION:-v16.50.0}
+    image: ${AGILECLIX_ERP_IMAGE:-agileclix-erpnext:v16.50.0}
     restart: unless-stopped
     environment:
       DB_HOST: db
@@ -201,7 +203,7 @@ services:
       start_period: 40s
 
   websocket:
-    image: ${FRAPPE_IMAGE:-frappe/erpnext}:${FRAPPE_VERSION:-v16.50.0}
+    image: ${AGILECLIX_ERP_IMAGE:-agileclix-erpnext:v16.50.0}
     restart: unless-stopped
     command: ["node", "/home/frappe/frappe-bench/apps/frappe/socketio.js"]
     environment:
@@ -215,7 +217,7 @@ services:
         condition: service_completed_successfully
 
   queue-short:
-    image: ${FRAPPE_IMAGE:-frappe/erpnext}:${FRAPPE_VERSION:-v16.50.0}
+    image: ${AGILECLIX_ERP_IMAGE:-agileclix-erpnext:v16.50.0}
     restart: unless-stopped
     command: ["bench", "worker", "--queue", "short,default"]
     volumes:
@@ -226,7 +228,7 @@ services:
         condition: service_completed_successfully
 
   queue-long:
-    image: ${FRAPPE_IMAGE:-frappe/erpnext}:${FRAPPE_VERSION:-v16.50.0}
+    image: ${AGILECLIX_ERP_IMAGE:-agileclix-erpnext:v16.50.0}
     restart: unless-stopped
     command: ["bench", "worker", "--queue", "long,default,short"]
     volumes:
@@ -237,7 +239,7 @@ services:
         condition: service_completed_successfully
 
   scheduler:
-    image: ${FRAPPE_IMAGE:-frappe/erpnext}:${FRAPPE_VERSION:-v16.50.0}
+    image: ${AGILECLIX_ERP_IMAGE:-agileclix-erpnext:v16.50.0}
     restart: unless-stopped
     command: ["bench", "schedule"]
     volumes:
@@ -248,7 +250,7 @@ services:
         condition: service_completed_successfully
 
   frontend:
-    image: ${FRAPPE_IMAGE:-frappe/erpnext}:${FRAPPE_VERSION:-v16.50.0}
+    image: ${AGILECLIX_ERP_IMAGE:-agileclix-erpnext:v16.50.0}
     restart: unless-stopped
     command: ["nginx-entrypoint.sh"]
     expose:
