@@ -31,10 +31,19 @@ def enrich_boot_session(bootinfo) -> None:
 def sync_branding_settings() -> None:
 	import frappe
 
-	if frappe.flags.in_install or frappe.flags.in_uninstall:
+	if frappe.flags.in_uninstall:
 		return
 
 	logo = AGILECLIX_LOGO_URL
+
+	try:
+		_sync_branding_settings(logo)
+	except Exception:
+		frappe.log_error(title="AgileClix branding sync failed")
+
+
+def _sync_branding_settings(logo: str) -> None:
+	import frappe
 
 	if frappe.db.exists("DocType", "Navbar Settings"):
 		navbar = frappe.get_single("Navbar Settings")
