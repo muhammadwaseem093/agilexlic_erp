@@ -9,6 +9,8 @@ required_apps = ["erpnext"]
 
 app_include_css = "/assets/agileclix_branding/css/agileclix_desk.css"
 app_include_js = "agileclix_branding.js"
+web_include_css = "/assets/agileclix_branding/css/agileclix_desk.css"
+web_include_js = "agileclix_branding.js"
 
 boot_session = "agileclix_branding.boot.enrich_boot_session"
 after_install = ["agileclix_branding.boot.sync_branding_settings"]
