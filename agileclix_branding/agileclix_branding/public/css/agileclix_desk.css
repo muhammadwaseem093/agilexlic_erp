@@ -1,11 +1,9 @@
-// AgileClix brand tokens (desk + login + website)
 :root {
 	--agileclix-blue: #1a6fd4;
 	--agileclix-blue-dark: #1456a8;
 	--agileclix-red: #e42424;
 	--agileclix-navy: #1a2332;
 	--agileclix-surface: #f6f8fb;
-
 	--primary: var(--agileclix-blue);
 	--btn-primary: var(--agileclix-blue);
 	--border-color: #d8dee9;
@@ -15,7 +13,6 @@
 	--awesomplete-hover-bg: var(--agileclix-blue);
 }
 
-// Login / signup
 body[data-path="login"] .page-card,
 .for-login .page-card {
 	border-radius: 12px;
@@ -44,24 +41,27 @@ body[data-path="login"] .btn-primary,
 .for-login .btn-primary {
 	background-color: var(--agileclix-blue);
 	border-color: var(--agileclix-blue-dark);
-	transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
-
-	&:hover,
-	&:focus {
-		background-color: var(--agileclix-blue-dark);
-		border-color: var(--agileclix-blue-dark);
-	}
+	transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-// Desk shell
-header.navbar,
-.desk-sidebar {
-	transition: background-color 0.2s ease, border-color 0.2s ease;
+body[data-path="login"] .btn-primary:hover,
+body[data-path="login"] .btn-primary:focus,
+.for-login .btn-primary:hover,
+.for-login .btn-primary:focus {
+	background-color: var(--agileclix-blue-dark);
+	border-color: var(--agileclix-blue-dark);
 }
 
 header.navbar {
 	border-bottom: 2px solid transparent;
-	border-image: linear-gradient(90deg, var(--agileclix-red) 0%, var(--agileclix-red) 50%, var(--agileclix-blue) 50%, var(--agileclix-blue) 100%) 1;
+	border-image: linear-gradient(
+			90deg,
+			var(--agileclix-red) 0%,
+			var(--agileclix-red) 50%,
+			var(--agileclix-blue) 50%,
+			var(--agileclix-blue) 100%
+		)
+		1;
 }
 
 .navbar .navbar-home img,
@@ -77,21 +77,21 @@ header.navbar {
 .btn.btn-primary {
 	background-color: var(--agileclix-blue);
 	border-color: var(--agileclix-blue-dark);
+}
 
-	&:hover {
-		background-color: var(--agileclix-blue-dark);
-	}
+.btn-primary:hover,
+.btn.btn-primary:hover {
+	background-color: var(--agileclix-blue-dark);
 }
 
 a:not(.btn) {
 	color: var(--agileclix-blue);
-
-	&:hover {
-		color: var(--agileclix-blue-dark);
-	}
 }
 
-// Workspace / list polish
+a:not(.btn):hover {
+	color: var(--agileclix-blue-dark);
+}
+
 .layout-main-section {
 	background: var(--agileclix-surface);
 }
@@ -100,5 +100,3 @@ a:not(.btn) {
 .list-row-head {
 	border-bottom-color: rgba(26, 111, 212, 0.15);
 }
-
-// Keep semantic ERP colors (success/warning/danger) untouched for stock & accounts states.

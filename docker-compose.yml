@@ -22,7 +22,7 @@
 # Do not publish port 3306. The database is only reachable inside this stack.
 # Volumes db-data and sites keep the test database across redeploys.
 #
-# Builds AgileClix-branded ERPNext from ./Dockerfile (fork replaces apps/erpnext in the image).
+# Builds AgileClix-branded ERPNext from ./Dockerfile (layers agileclix_branding on official erpnext).
 # Override only if you publish a prebuilt image: AGILECLIX_ERP_IMAGE=myregistry/agileclix-erpnext:v16.50.0
 
 services:
@@ -100,6 +100,10 @@ services:
             --install-app erpnext \
             --set-default \
             "$${SITE_NAME}"
+        fi
+        if ! bench --site "$${SITE_NAME}" list-apps 2>/dev/null | grep -Fxq agileclix_branding; then
+          echo "Installing agileclix_branding"
+          bench --site "$${SITE_NAME}" install-app agileclix_branding
         fi
         bench --site "$${SITE_NAME}" set-config host_name "https://$${SITE_NAME}"
         bench --site "$${SITE_NAME}" set-config -p developer_mode 0

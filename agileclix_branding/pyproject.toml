@@ -1,0 +1,17 @@
+[project]
+name = "agileclix_branding"
+version = "0.0.1"
+description = "AgileClix branding layer for ERPNext"
+requires-python = ">=3.10"
+authors = [{ name = "AgileClix" }]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agileclix_branding*"]
+
+[tool.setuptools.package-data]
+agileclix_branding = ["public/**/*"]

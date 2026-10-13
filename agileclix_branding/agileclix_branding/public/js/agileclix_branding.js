@@ -1,6 +1,5 @@
-// AgileClix desk + login branding (non-invasive: visuals only)
 (function () {
-	const LOGO = "/assets/erpnext/images/agileclix-logo.png";
+	const LOGO = "/assets/agileclix_branding/images/agileclix-logo.png";
 	const APP_NAME = "AgileClix ERP";
 
 	function swapLogos(root) {
@@ -37,14 +36,15 @@
 		setTitle();
 	}
 
-	frappe.ready(() => {
-		apply();
-		if (frappe.router && frappe.router.on) {
-			frappe.router.on("change", () => requestAnimationFrame(apply));
-		}
-	});
+	if (typeof frappe !== "undefined" && frappe.ready) {
+		frappe.ready(() => {
+			apply();
+			if (frappe.router && frappe.router.on) {
+				frappe.router.on("change", () => requestAnimationFrame(apply));
+			}
+		});
+	}
 
-	// Login page loads before frappe.ready on some builds
 	if (document.readyState === "loading") {
 		document.addEventListener("DOMContentLoaded", apply);
 	} else {

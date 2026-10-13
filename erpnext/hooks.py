@@ -1,22 +1,22 @@
 app_name = "erpnext"
-app_title = "AgileClix ERP"
-app_publisher = "AgileClix"
-app_description = """AgileClix ERP — Work Smarter. Grow Faster."""
+app_title = "ERPNext"
+app_publisher = "Frappe Technologies Pvt. Ltd."
+app_description = """ERP made simple"""
 app_icon = "fa fa-th"
-app_color = "#1a6fd4"
-app_email = "hello@agileclix.com"
+app_color = "#e74c3c"
+app_email = "hello@frappe.io"
 app_license = "GNU General Public License (v3)"
-source_link = "https://github.com/muhammadwaseem093/agilexlic_erp"
-app_logo_url = "/assets/erpnext/images/agileclix-logo.png"
+source_link = "https://github.com/frappe/erpnext"
+app_logo_url = "/assets/erpnext/images/erpnext-logo.svg"
 app_home = "/desk/home"
 
 add_to_apps_screen = [
 	{
 		"name": app_name,
-		"logo": "/assets/erpnext/images/agileclix-logo.png",
+		"logo": "/assets/erpnext/images/erpnext-logo.svg",
 		"title": app_title,
 		"route": app_home,
-		"setup_wizard_text": "Welcome to AgileClix ERP. Let's set up your company.",
+		"setup_wizard_text": "Let's give your business a home.",
 		"has_permission": "erpnext.check_app_permission",
 		"sequence_id": 1,
 	}
@@ -47,7 +47,7 @@ code_only_modules = {
 
 develop_version = "17.x.x-develop"
 
-app_include_js = ["erpnext.bundle.js", "agileclix_branding.js"]
+app_include_js = "erpnext.bundle.js"
 app_include_css = "erpnext.bundle.css"
 web_include_css = "erpnext-web.bundle.css"
 email_css = "email_erpnext.bundle.css"
@@ -91,11 +91,7 @@ welcome_email = "erpnext.setup.utils.welcome_email"
 setup_wizard_requires = "assets/erpnext/js/setup_wizard.js"
 setup_wizard_stages = "erpnext.setup.setup_wizard.setup_wizard.get_setup_stages"
 
-after_install = [
-	"erpnext.setup.install.after_install",
-	"erpnext.startup.branding.sync_branding_settings",
-]
-after_migrate = ["erpnext.startup.branding.sync_branding_settings"]
+after_install = "erpnext.setup.install.after_install"
 
 after_app_install = "erpnext.setup.install.after_app_install"
 after_app_uninstall = "erpnext.setup.install.after_app_uninstall"
@@ -153,9 +149,8 @@ calendars = ["Task", "Work Order", "Sales Order", "Holiday List", "ToDo"]
 website_generators = ["BOM", "Sales Partner"]
 
 website_context = {
-	"favicon": "/assets/erpnext/images/agileclix-logo.png",
-	"splash_image": "/assets/erpnext/images/agileclix-logo.png",
-	"brand_html": "<img src='/assets/erpnext/images/agileclix-logo.png' class='agileclix-brand-logo' alt='AgileClix ERP'/>",
+	"favicon": "/assets/erpnext/images/erpnext-favicon.svg",
+	"splash_image": "/assets/erpnext/images/erpnext-logo.svg",
 }
 
 # nosemgrep

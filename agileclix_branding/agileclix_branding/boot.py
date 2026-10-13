@@ -1,13 +1,11 @@
 # Copyright (c) AgileClix
-# Branding helpers for desk, login, and persisted site settings.
 
 AGILECLIX_APP_NAME = "AgileClix ERP"
 AGILECLIX_TAGLINE = "Work Smarter. Grow Faster."
-AGILECLIX_LOGO_URL = "/assets/erpnext/images/agileclix-logo.png"
+AGILECLIX_LOGO_URL = "/assets/agileclix_branding/images/agileclix-logo.png"
 
 
 def enrich_boot_session(bootinfo) -> None:
-	"""Inject AgileClix assets into desk boot payload without changing ERP logic."""
 	import frappe
 
 	bootinfo.app_logo_url = AGILECLIX_LOGO_URL
@@ -21,22 +19,16 @@ def enrich_boot_session(bootinfo) -> None:
 	if navbar and hasattr(navbar, "app_logo"):
 		navbar.app_logo = AGILECLIX_LOGO_URL
 
-	# Frappe may expose navbar settings as a plain dict on older builds.
 	if isinstance(getattr(bootinfo, "navbar_settings", None), dict):
 		bootinfo.navbar_settings["app_logo"] = AGILECLIX_LOGO_URL
 
 	if frappe.session.user != "Guest":
-		_set_document_title(bootinfo)
-
-
-def _set_document_title(bootinfo) -> None:
-	sysdefaults = getattr(bootinfo, "sysdefaults", None)
-	if sysdefaults is not None and hasattr(sysdefaults, "app_name"):
-		sysdefaults.app_name = AGILECLIX_APP_NAME
+		sysdefaults = getattr(bootinfo, "sysdefaults", None)
+		if sysdefaults is not None and hasattr(sysdefaults, "app_name"):
+			sysdefaults.app_name = AGILECLIX_APP_NAME
 
 
 def sync_branding_settings() -> None:
-	"""Keep Website / Navbar settings aligned after migrate (idempotent)."""
 	import frappe
 
 	if frappe.flags.in_install or frappe.flags.in_uninstall:
