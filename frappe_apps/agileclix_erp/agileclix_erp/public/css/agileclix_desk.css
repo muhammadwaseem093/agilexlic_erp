@@ -1,27 +1,38 @@
+/* AgileClix ERP — Desk & login (design tokens aligned with headless UI) */
 :root {
-	--agileclix-blue: #1a6fd4;
-	--agileclix-blue-dark: #1456a8;
+	--agileclix-primary: #2563eb;
+	--agileclix-primary-dark: #1d4ed8;
+	--agileclix-accent: #0d9488;
+	--agileclix-sidebar: #0f172a;
 	--agileclix-red: #e42424;
-	--agileclix-navy: #1a2332;
-	--agileclix-surface: #f6f8fb;
-	--primary: var(--agileclix-blue);
-	--btn-primary: var(--agileclix-blue);
-	--border-color: #d8dee9;
+	--agileclix-surface: #f8fafc;
+	--agileclix-navy: #0f172a;
+	--primary: var(--agileclix-primary);
+	--btn-primary: var(--agileclix-primary);
+	--border-color: #e2e8f0;
 	--heading-color: var(--agileclix-navy);
-	--text-color: #2c3e50;
-	--text-muted: #5c6b7a;
-	--awesomplete-hover-bg: var(--agileclix-blue);
+	--text-color: #0f172a;
+	--text-muted: #64748b;
+	--awesomplete-hover-bg: var(--agileclix-primary);
+	--bg-color: var(--agileclix-surface);
+}
+
+/* —— Login —— */
+body[data-path="login"],
+.for-login {
+	background: linear-gradient(160deg, #f8fafc 0%, #e2e8f0 45%, #f1f5f9 100%);
 }
 
 body[data-path="login"] .page-card,
 .for-login .page-card {
-	border-radius: 12px;
-	box-shadow: 0 12px 40px rgba(26, 35, 50, 0.08);
+	border-radius: 16px;
+	border: 1px solid var(--border-color);
+	box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
 }
 
 body[data-path="login"] .page-card-head img,
 .for-login .page-card-head img {
-	max-height: 72px;
+	max-height: 80px;
 	width: auto;
 	object-fit: contain;
 }
@@ -31,72 +42,103 @@ body[data-path="login"] .page-card-head::after,
 	content: "Work Smarter. Grow Faster.";
 	display: block;
 	margin-top: 0.5rem;
-	font-size: 0.85rem;
+	font-size: 0.875rem;
 	color: var(--text-muted);
 	font-weight: 500;
-	letter-spacing: 0.01em;
 }
 
 body[data-path="login"] .btn-primary,
 .for-login .btn-primary {
-	background-color: var(--agileclix-blue);
-	border-color: var(--agileclix-blue-dark);
-	transition: background-color 0.2s ease, border-color 0.2s ease;
+	background-color: var(--agileclix-primary);
+	border-color: var(--agileclix-primary-dark);
+	border-radius: 8px;
 }
 
 body[data-path="login"] .btn-primary:hover,
-body[data-path="login"] .btn-primary:focus,
-.for-login .btn-primary:hover,
-.for-login .btn-primary:focus {
-	background-color: var(--agileclix-blue-dark);
-	border-color: var(--agileclix-blue-dark);
+.for-login .btn-primary:hover {
+	background-color: var(--agileclix-primary-dark);
 }
 
+/* —— Top bar —— */
 header.navbar {
-	border-bottom: 2px solid transparent;
+	background: var(--agileclix-sidebar) !important;
+	border-bottom: 3px solid transparent;
 	border-image: linear-gradient(
 			90deg,
 			var(--agileclix-red) 0%,
-			var(--agileclix-red) 50%,
-			var(--agileclix-blue) 50%,
-			var(--agileclix-blue) 100%
+			var(--agileclix-red) 42%,
+			var(--agileclix-primary) 42%,
+			var(--agileclix-primary) 100%
 		)
 		1;
+}
+
+header.navbar .navbar-nav .nav-link,
+header.navbar .navbar-nav .dropdown-item,
+header.navbar .search-bar input,
+header.navbar .es-icon {
+	color: #f8fafc !important;
+}
+
+header.navbar .search-bar {
+	background: rgba(255, 255, 255, 0.08);
+	border-radius: 8px;
 }
 
 .navbar .navbar-home img,
 .navbar .app-logo img,
 .desk-sidebar .sidebar-brand img,
-.desk-sidebar .app-logo img {
-	max-height: 32px;
+.desk-sidebar .app-logo img,
+header.navbar .navbar-brand img {
+	max-height: 36px;
 	width: auto;
 	object-fit: contain;
 }
 
-.btn-primary,
-.btn.btn-primary {
-	background-color: var(--agileclix-blue);
-	border-color: var(--agileclix-blue-dark);
-}
-
-.btn-primary:hover,
-.btn.btn-primary:hover {
-	background-color: var(--agileclix-blue-dark);
-}
-
-a:not(.btn) {
-	color: var(--agileclix-blue);
-}
-
-a:not(.btn):hover {
-	color: var(--agileclix-blue-dark);
-}
-
-.layout-main-section {
+/* —— App launcher (/desk home) —— */
+.desk-page .layout-main-section,
+.layout-main-section.frappe-card {
 	background: var(--agileclix-surface);
 }
 
 .widget-group .widget-head,
 .list-row-head {
-	border-bottom-color: rgba(26, 111, 212, 0.15);
+	border-bottom-color: rgba(37, 99, 235, 0.12);
+}
+
+.shortcut-widget-box .widget-head .widget-title,
+.widget.shortcut-widget-box .caption {
+	font-weight: 600;
+	color: var(--agileclix-navy);
+}
+
+/* Primary actions */
+.btn-primary,
+.btn.btn-primary {
+	background-color: var(--agileclix-primary);
+	border-color: var(--agileclix-primary-dark);
+	border-radius: 8px;
+}
+
+.btn-primary:hover,
+.btn.btn-primary:hover {
+	background-color: var(--agileclix-primary-dark);
+}
+
+a:not(.btn) {
+	color: var(--agileclix-primary);
+}
+
+a:not(.btn):hover {
+	color: var(--agileclix-primary-dark);
+}
+
+/* Sidebar */
+.desk-sidebar {
+	border-right: 1px solid var(--border-color);
+}
+
+.desk-sidebar .sidebar-item.selected {
+	background: rgba(37, 99, 235, 0.1);
+	border-left: 3px solid var(--agileclix-primary);
 }

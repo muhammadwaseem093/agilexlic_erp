@@ -4,6 +4,7 @@ AGILECLIX_APP_NAME = "AgileClix ERP"
 AGILECLIX_TAGLINE = "Work Smarter. Grow Faster."
 AGILECLIX_LOGO_URL = "/assets/agileclix_erp/images/agileclix-logo.png"
 AGILECLIX_PUBLISHER = "ZentoriLabs"
+AGILECLIX_PRIMARY = "#2563EB"
 
 
 def enrich_boot_session(bootinfo) -> None:
@@ -15,7 +16,11 @@ def enrich_boot_session(bootinfo) -> None:
 		"tagline": AGILECLIX_TAGLINE,
 		"logo_url": AGILECLIX_LOGO_URL,
 		"publisher": AGILECLIX_PUBLISHER,
+		"primary_color": AGILECLIX_PRIMARY,
+		"headless_url": frappe.conf.get("agileclix_headless_url"),
 	}
+	if hasattr(bootinfo, "app_name"):
+		bootinfo.app_name = AGILECLIX_APP_NAME
 
 	navbar = getattr(bootinfo, "navbar_settings", None)
 	if navbar and hasattr(navbar, "app_logo"):

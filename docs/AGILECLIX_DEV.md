@@ -8,7 +8,8 @@
 | Stack | Command | URLs |
 |-------|---------|------|
 | ERP only (Coolify / local) | `docker compose up -d --build` | Desk: `http://localhost:8080` |
-| ERP + gateway + web | `docker compose -f docker-compose.yml -f deploy/docker-compose.dev.yml up -d --build` | Web `http://localhost:3000`, Gateway `http://localhost:8100` |
+| Full stack (incl. web + gateway) | `docker compose up -d --build` | Web `http://localhost:3000` (map domain in Coolify), Gateway `:8000` |
+| Dev override (local gateway port 8100) | `docker compose -f docker-compose.yml -f deploy/docker-compose.dev.yml up -d --build` | Gateway `http://localhost:8100` |
 
 ## Frappe apps
 

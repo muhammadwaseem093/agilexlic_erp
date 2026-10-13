@@ -23,7 +23,7 @@
 
 body {
   margin: 0;
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   background: var(--ac-background);
   color: var(--ac-text);
 }

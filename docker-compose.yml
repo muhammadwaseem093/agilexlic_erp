@@ -24,6 +24,9 @@
 #
 # Builds AgileClix-branded ERPNext from ./Dockerfile (layers agileclix_branding on official erpnext).
 # Override only if you publish a prebuilt image: AGILECLIX_ERP_IMAGE=myregistry/agileclix-erpnext:v16.50.0
+#
+# Optional headless UI (web + gateway): set Coolify domains on services web:3000 and gateway:8000.
+# Env: AGILECLIX_GATEWAY_PUBLIC_URL, AGILECLIX_HEADLESS_URL (https URL of web app), AGILECLIX_FRAPPE_DESK_URL
 
 services:
   configurator:
@@ -170,14 +173,19 @@ services:
         elif site_has_app "$${SITE_NAME}" agileclix_branding; then
           bench --site "$${SITE_NAME}" execute agileclix_branding.boot.sync_branding_settings || true
         fi
+        if [ -n "$${AGILECLIX_HEADLESS_URL:-}" ]; then
+          bench --site "$${SITE_NAME}" set-config agileclix_headless_url "$${AGILECLIX_HEADLESS_URL}"
+        fi
         bench --site "$${SITE_NAME}" set-config host_name "https://$${SITE_NAME}"
         bench --site "$${SITE_NAME}" set-config -p developer_mode 0
         bench --site "$${SITE_NAME}" set-admin-password "$${ADMIN_PASSWORD}"
+        bench --site "$${SITE_NAME}" clear-cache || true
         echo "Site $${SITE_NAME} is ready (Administrator password matches SERVICE_PASSWORD_64_ADMIN)"
     environment:
       SITE_NAME: ${SITE_NAME:-erp.agileclix.com}
       ADMIN_PASSWORD: ${SERVICE_PASSWORD_64_ADMIN:-admin}
       DB_ROOT_PASSWORD: ${SERVICE_PASSWORD_64_MARIADB:?}
+      AGILECLIX_HEADLESS_URL: ${AGILECLIX_HEADLESS_URL:-}
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
@@ -349,6 +357,45 @@ services:
       timeout: 10s
       retries: 20
       start_period: 20s
+
+  # Headless AgileClix UI — assign a domain in Coolify (e.g. app.erp.agileclix.com → port 3000).
+  gateway:
+    build:
+      context: ./services/gateway
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    expose:
+      - "8000"
+    environment:
+      DEBUG: "false"
+      FRAPPE_BASE_URL: http://backend:8000
+      FRAPPE_SITE: ${SITE_NAME:-erp.agileclix.com}
+      CORS_ORIGINS: ${AGILECLIX_CORS_ORIGINS:-https://erp.agileclix.com,http://localhost:3000}
+      SERVICE_URL_GATEWAY_8000: ${SERVICE_URL_GATEWAY:-}
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    expose:
+      - "3000"
+    environment:
+      NEXT_PUBLIC_GATEWAY_URL: ${AGILECLIX_GATEWAY_PUBLIC_URL:-http://localhost:8100}
+      NEXT_PUBLIC_FRAPPE_DESK_URL: ${AGILECLIX_FRAPPE_DESK_URL:-https://erp.agileclix.com/desk}
+      SERVICE_URL_WEB_3000: ${SERVICE_URL_WEB:-}
+    depends_on:
+      gateway:
+        condition: service_healthy
 
 volumes:
   db-data:
