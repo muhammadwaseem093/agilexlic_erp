@@ -1,0 +1,18 @@
+[project]
+name = "agileclix_erp"
+version = "0.1.0"
+description = "AgileClix ERP extensions for ERPNext (ZentoriLabs)"
+requires-python = ">=3.10"
+authors = [{ name = "ZentoriLabs" }]
+license = { text = "MIT" }
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agileclix_erp*"]
+
+[tool.setuptools.package-data]
+agileclix_erp = ["public/**/*"]

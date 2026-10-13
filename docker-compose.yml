@@ -37,11 +37,13 @@ services:
       - |
         set -e
         ls -1 apps > sites/apps.txt
-        if [ -d apps/agileclix_branding ]; then
-          grep -qx agileclix_branding sites/apps.txt 2>/dev/null || echo agileclix_branding >> sites/apps.txt
-          mkdir -p sites/assets/agileclix_branding
-          cp -a apps/agileclix_branding/agileclix_branding/public/. sites/assets/agileclix_branding/
-        fi
+        for custom_app in agileclix_branding agileclix_erp; do
+          if [ -d "apps/$${custom_app}/$${custom_app}/public" ]; then
+            grep -qx "$${custom_app}" sites/apps.txt 2>/dev/null || echo "$${custom_app}" >> sites/apps.txt
+            mkdir -p "sites/assets/$${custom_app}"
+            cp -a "apps/$${custom_app}/$${custom_app}/public/." "sites/assets/$${custom_app}/"
+          fi
+        done
         bench set-config -g db_host "$$DB_HOST"
         bench set-config -gp db_port "$$DB_PORT"
         bench set-config -g redis_cache "redis://$$REDIS_CACHE"
@@ -86,9 +88,11 @@ services:
           fi
         done
         ls -1 apps > sites/apps.txt
-        if [ -d apps/agileclix_branding ] && ! grep -qx agileclix_branding sites/apps.txt; then
-          echo agileclix_branding >> sites/apps.txt
-        fi
+        for custom_app in agileclix_branding agileclix_erp; do
+          if [ -d "apps/$${custom_app}" ] && ! grep -qx "$${custom_app}" sites/apps.txt; then
+            echo "$${custom_app}" >> sites/apps.txt
+          fi
+        done
         site_ready=0
         if [ -f "sites/$${SITE_NAME}/site_config.json" ]; then
           if bench --site "$${SITE_NAME}" mariadb -N -e "SHOW TABLES LIKE 'tabModule Def'" 2>/dev/null | grep -q "tabModule Def"; then
@@ -110,15 +114,24 @@ services:
             --set-default \
             "$${SITE_NAME}"
         fi
-        if ! bench --site "$${SITE_NAME}" list-apps 2>/dev/null | grep -q agileclix_branding; then
-          echo "Installing agileclix_branding on existing site"
-          if ! bench --site "$${SITE_NAME}" install-app agileclix_branding; then
-            echo "WARN: install-app agileclix_branding failed; copying static assets only"
+        if ! bench --site "$${SITE_NAME}" list-apps 2>/dev/null | grep -q agileclix_erp; then
+          echo "Installing agileclix_erp on site"
+          if ! bench --site "$${SITE_NAME}" install-app agileclix_erp; then
+            echo "WARN: install-app agileclix_erp failed; copying static assets only"
           fi
         fi
-        mkdir -p sites/assets/agileclix_branding
-        cp -a apps/agileclix_branding/agileclix_branding/public/. sites/assets/agileclix_branding/ || true
-        bench --site "$${SITE_NAME}" execute agileclix_branding.boot.sync_branding_settings || true
+        if ! bench --site "$${SITE_NAME}" list-apps 2>/dev/null | grep -q agileclix_branding; then
+          if ! bench --site "$${SITE_NAME}" install-app agileclix_branding; then
+            echo "WARN: install-app agileclix_branding failed (legacy branding)"
+          fi
+        fi
+        for custom_app in agileclix_branding agileclix_erp; do
+          if [ -d "apps/$${custom_app}/$${custom_app}/public" ]; then
+            mkdir -p "sites/assets/$${custom_app}"
+            cp -a "apps/$${custom_app}/$${custom_app}/public/." "sites/assets/$${custom_app}/" || true
+          fi
+        done
+        bench --site "$${SITE_NAME}" execute agileclix_erp.boot.sync_branding_settings || true
         bench --site "$${SITE_NAME}" set-config host_name "https://$${SITE_NAME}"
         bench --site "$${SITE_NAME}" set-config -p developer_mode 0
         bench --site "$${SITE_NAME}" set-admin-password "$${ADMIN_PASSWORD}"

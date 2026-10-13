@@ -8,3 +8,9 @@ node_modules
 .cursor
 agent-tools
 terminals
+erpnext
+banking
+apps/web
+services/gateway
+docs
+platform
