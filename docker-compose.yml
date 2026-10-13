@@ -44,6 +44,12 @@ services:
         bench set-config -g redis_socketio "redis://$$REDIS_QUEUE"
         bench set-config -gp socketio_port "$$SOCKETIO_PORT"
         bench set-config -g proxy_ssl_header X-Forwarded-Proto
+        if ! bench build --app agileclix_branding --production; then
+          echo "bench build failed; copying branding assets into sites/assets"
+          mkdir -p sites/assets/agileclix_branding
+          cp -a apps/agileclix_branding/agileclix_branding/public/. sites/assets/agileclix_branding/
+        fi
+        bench clear-cache
     environment:
       DB_HOST: db
       DB_PORT: "3306"
