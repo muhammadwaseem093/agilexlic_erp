@@ -1,47 +1,55 @@
-# Coolify on a Hostinger VPS — test stack for https://erp.agileclix.com
+# AgileClix ERP on Coolify (Hostinger VPS) - https://erp.agileclix.com
 #
-# Deploy (Coolify):
-#   1. Point DNS: A record erp.agileclix.com -> the VPS public IP.
-#   2. New resource -> Git repository -> this repo, branch develop.
-#      Build pack: Docker Compose. Compose file: docker-compose.yml.
-#   3. After Coolify loads the file, open Domains and set the frontend service to:
-#        https://erp.agileclix.com:8080
-#      The :8080 is the container port. Public traffic stays on 443.
-#   4. Deploy. The first run creates the MariaDB database and the ERPNext site.
-#      That usually takes 10-20 minutes. Watch the create-site logs.
-#   5. Coolify Production env (example):
-#        SITE_NAME=erp.agileclix.com
-#        SERVICE_PASSWORD_64_ADMIN=admin@erp.com
-#        SERVICE_PASSWORD_64_MARIADB=Admin@123
-#      Redeploy so admin-password-sync runs.
-#   6. Sign in at https://erp.agileclix.com (the field is labeled Email but use the username):
-#        Username: Administrator
-#        Password: SERVICE_PASSWORD_64_ADMIN only (not SERVICE_PASSWORD_64_MARIADB).
+# 1. DNS: A record erp.agileclix.com -> VPS public IP (optional: app.erp / api.erp for the web UI).
+# 2. Coolify: New resource -> Git repository -> this repo, branch develop,
+#    Build pack: Docker Compose, compose file: docker-compose.yml.
+# 3. Domains (Coolify "Domains" per service; the :port is the container port, traffic stays on 443):
+#      frontend -> https://erp.agileclix.com:8080        (required: ERP desk + login)
+#      web      -> https://app.erp.agileclix.com:3000    (optional headless UI)
+#      gateway  -> https://api.erp.agileclix.com:8000    (optional, needed by web)
+# 4. Environment (Coolify generates SERVICE_PASSWORD_64_* automatically; leave them generated):
+#      SITE_NAME=erp.agileclix.com
+#      SERVICE_PASSWORD_64_ADMIN    -> Administrator login password (see it in Coolify env)
+#      SERVICE_PASSWORD_64_MARIADB  -> MariaDB root password (never needed for login)
+#    For the web UI also set: AGILECLIX_GATEWAY_PUBLIC_URL=https://api.erp.agileclix.com
+#      AGILECLIX_HEADLESS_URL=https://app.erp.agileclix.com
+#      AGILECLIX_CORS_ORIGINS=https://erp.agileclix.com,https://app.erp.agileclix.com
+# 5. Deploy. First run creates the database and site (10-20 min; watch create-site logs).
+#    Later deploys migrate the existing site; create-site never deletes an existing site.
+# 6. Sign in at https://erp.agileclix.com as Administrator with SERVICE_PASSWORD_64_ADMIN.
 #
-# MariaDB root password (SERVICE_PASSWORD_64_MARIADB) is for the db service only, not ERP login.
-# Do not publish port 3306. The database is only reachable inside this stack.
-# Volumes db-data and sites keep the test database across redeploys.
+# Never change SERVICE_PASSWORD_64_MARIADB after the first deploy: MariaDB keeps the password the
+# db-data volume was created with, and site creation/migrations would then fail.
+# Port 3306 is never published; the database is only reachable inside this stack.
+# Volumes db-data and sites hold all business data - back them up (see docs/AGILECLIX_DEV.md).
 #
-# This stack runs the official frappe/erpnext:v16.50.0 image (stable test target).
-# This git branch is ERPNext 17.0.0-dev and is not what the containers execute.
-# Change FRAPPE_VERSION in Coolify only when you intend to move off that image.
+# Images build from ./Dockerfile (ERP + agileclix apps), ./apps/web and ./services/gateway.
+# Override only with a prebuilt image: AGILECLIX_ERP_IMAGE=myregistry/agileclix-erpnext:v16.50.0
 
 services:
   configurator:
-    image: ${FRAPPE_IMAGE:-frappe/erpnext}:${FRAPPE_VERSION:-v16.50.0}
+    image: ${AGILECLIX_ERP_IMAGE:-agileclix-erpnext:v16.50.0}
+    build:
+      context: .
+      dockerfile: Dockerfile
     restart: "no"
     entrypoint: ["bash", "-c"]
     command:
       - |
-        set -euo pipefail
+        set -e
         ls -1 apps > sites/apps.txt
+        for custom_app in agileclix_branding agileclix_erp; do
+          if [ -d "apps/$${custom_app}/$${custom_app}/public" ]; then
+            grep -qx "$${custom_app}" sites/apps.txt 2>/dev/null || echo "$${custom_app}" >> sites/apps.txt
+          fi
+        done
         bench set-config -g db_host "$$DB_HOST"
         bench set-config -gp db_port "$$DB_PORT"
         bench set-config -g redis_cache "redis://$$REDIS_CACHE"
         bench set-config -g redis_queue "redis://$$REDIS_QUEUE"
         bench set-config -g redis_socketio "redis://$$REDIS_QUEUE"
         bench set-config -gp socketio_port "$$SOCKETIO_PORT"
-        bench set-config -g proxy_ssl_header X-Forwarded-Proto
+        bench set-config -g proxy_ssl_header "X-Forwarded-Proto"
     environment:
       DB_HOST: db
       DB_PORT: "3306"
@@ -60,12 +68,12 @@ services:
         condition: service_healthy
 
   create-site:
-    image: ${FRAPPE_IMAGE:-frappe/erpnext}:${FRAPPE_VERSION:-v16.50.0}
+    image: ${AGILECLIX_ERP_IMAGE:-agileclix-erpnext:v16.50.0}
     restart: "no"
     entrypoint: ["bash", "-c"]
     command:
       - |
-        set -euo pipefail
+        set -e
         wait-for-it -t 180 db:3306
         wait-for-it -t 120 redis-cache:6379
         wait-for-it -t 120 redis-queue:6379
@@ -78,35 +86,99 @@ services:
             exit 1
           fi
         done
+        # list-apps prints "app  version  branch" per line (v16), so match the first column only.
+        site_has_app() {
+          bench --site "$$1" list-apps 2>/dev/null | awk '{print $$1}' | grep -qx "$$2"
+        }
+        site_has_erpnext() {
+          site_has_app "$$1" erpnext
+        }
+        install_custom_app() {
+          local app="$$1"
+          if site_has_app "$${SITE_NAME}" "$${app}"; then
+            return 0
+          fi
+          echo "Installing $${app} on $${SITE_NAME}"
+          if ! bench --site "$${SITE_NAME}" install-app "$${app}"; then
+            echo "WARN: install-app $${app} failed"
+            return 1
+          fi
+          return 0
+        }
+        ls -1 apps > sites/apps.txt
+        for custom_app in agileclix_branding agileclix_erp; do
+          if [ -d "apps/$${custom_app}" ]; then
+            grep -qx "$${custom_app}" sites/apps.txt 2>/dev/null || echo "$${custom_app}" >> sites/apps.txt
+            if [ -x env/bin/pip ]; then
+              env/bin/pip install -q -e "apps/$${custom_app}" || echo "WARN: pip install $${custom_app}"
+            fi
+          fi
+        done
         site_ready=0
-        if [ -f "sites/$${SITE_NAME}/site_config.json" ]; then
-          if bench --site "$${SITE_NAME}" mariadb -N -e "SHOW TABLES LIKE 'tabModule Def'" 2>/dev/null | grep -q "tabModule Def"; then
+        if site_has_erpnext "$${SITE_NAME}"; then
+          site_ready=1
+        elif [ -f "sites/$${SITE_NAME}/site_config.json" ]; then
+          echo "Site directory exists; attempting recover via migrate"
+          bench --site "$${SITE_NAME}" migrate || true
+          if site_has_erpnext "$${SITE_NAME}"; then
             site_ready=1
           fi
         fi
-        if [ "$$site_ready" -eq 1 ]; then
-          echo "Site $${SITE_NAME} already exists; running migrate"
-          bench --site "$${SITE_NAME}" migrate
-        else
+        if [ "$$site_ready" -eq 0 ] && [ -f "sites/$${SITE_NAME}/site_config.json" ]; then
+          # Never wipe an existing site automatically: a detection failure must not destroy data.
+          echo "ERROR: site $${SITE_NAME} exists but erpnext could not be detected; refusing to recreate it."
+          echo "Inspect with: bench --site $${SITE_NAME} list-apps"
+          exit 1
+        fi
+        if [ "$$site_ready" -eq 0 ]; then
           echo "Creating site $${SITE_NAME}"
-          rm -rf "sites/$${SITE_NAME}"
-          bench new-site --force \
+          if ! bench new-site --force \
             --mariadb-user-host-login-scope='%' \
             --admin-password="$${ADMIN_PASSWORD}" \
             --db-root-username=root \
             --db-root-password="$${DB_ROOT_PASSWORD}" \
             --install-app erpnext \
             --set-default \
-            "$${SITE_NAME}"
+            "$${SITE_NAME}"; then
+            echo "new-site failed; attempting drop-site and retry"
+            bench drop-site "$${SITE_NAME}" --db-root-password="$${DB_ROOT_PASSWORD}" --force || true
+            bench new-site --force \
+              --mariadb-user-host-login-scope='%' \
+              --admin-password="$${ADMIN_PASSWORD}" \
+              --db-root-username=root \
+              --db-root-password="$${DB_ROOT_PASSWORD}" \
+              --install-app erpnext \
+              --set-default \
+              "$${SITE_NAME}"
+          fi
+        else
+          echo "Site $${SITE_NAME} already has erpnext"
+        fi
+        install_custom_app agileclix_erp || true
+        if site_has_app "$${SITE_NAME}" agileclix_erp; then
+          echo "agileclix_erp installed; skipping legacy agileclix_branding install"
+        else
+          install_custom_app agileclix_branding || true
+        fi
+        bench --site "$${SITE_NAME}" migrate
+        if site_has_app "$${SITE_NAME}" agileclix_erp; then
+          bench --site "$${SITE_NAME}" execute agileclix_erp.boot.sync_branding_settings || true
+        elif site_has_app "$${SITE_NAME}" agileclix_branding; then
+          bench --site "$${SITE_NAME}" execute agileclix_branding.boot.sync_branding_settings || true
+        fi
+        if [ -n "$${AGILECLIX_HEADLESS_URL:-}" ]; then
+          bench --site "$${SITE_NAME}" set-config agileclix_headless_url "$${AGILECLIX_HEADLESS_URL}"
         fi
         bench --site "$${SITE_NAME}" set-config host_name "https://$${SITE_NAME}"
         bench --site "$${SITE_NAME}" set-config -p developer_mode 0
         bench --site "$${SITE_NAME}" set-admin-password "$${ADMIN_PASSWORD}"
+        bench --site "$${SITE_NAME}" clear-cache || true
         echo "Site $${SITE_NAME} is ready (Administrator password matches SERVICE_PASSWORD_64_ADMIN)"
     environment:
       SITE_NAME: ${SITE_NAME:-erp.agileclix.com}
-      ADMIN_PASSWORD: ${SERVICE_PASSWORD_64_ADMIN:-admin}
+      ADMIN_PASSWORD: ${SERVICE_PASSWORD_64_ADMIN:?Set SERVICE_PASSWORD_64_ADMIN}
       DB_ROOT_PASSWORD: ${SERVICE_PASSWORD_64_MARIADB:?}
+      AGILECLIX_HEADLESS_URL: ${AGILECLIX_HEADLESS_URL:-}
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
@@ -118,7 +190,7 @@ services:
 
   # Runs on every deploy so Administrator matches SERVICE_PASSWORD_64_ADMIN in Coolify.
   admin-password-sync:
-    image: ${FRAPPE_IMAGE:-frappe/erpnext}:${FRAPPE_VERSION:-v16.50.0}
+    image: ${AGILECLIX_ERP_IMAGE:-agileclix-erpnext:v16.50.0}
     restart: "no"
     entrypoint: ["bash", "-c"]
     command:
@@ -133,7 +205,7 @@ services:
         echo "Administrator password synced for $${SITE_NAME}"
     environment:
       SITE_NAME: ${SITE_NAME:-erp.agileclix.com}
-      ADMIN_PASSWORD: ${SERVICE_PASSWORD_64_ADMIN:-admin}
+      ADMIN_PASSWORD: ${SERVICE_PASSWORD_64_ADMIN:?Set SERVICE_PASSWORD_64_ADMIN}
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
@@ -182,7 +254,7 @@ services:
       retries: 10
 
   backend:
-    image: ${FRAPPE_IMAGE:-frappe/erpnext}:${FRAPPE_VERSION:-v16.50.0}
+    image: ${AGILECLIX_ERP_IMAGE:-agileclix-erpnext:v16.50.0}
     restart: unless-stopped
     environment:
       DB_HOST: db
@@ -201,7 +273,7 @@ services:
       start_period: 40s
 
   websocket:
-    image: ${FRAPPE_IMAGE:-frappe/erpnext}:${FRAPPE_VERSION:-v16.50.0}
+    image: ${AGILECLIX_ERP_IMAGE:-agileclix-erpnext:v16.50.0}
     restart: unless-stopped
     command: ["node", "/home/frappe/frappe-bench/apps/frappe/socketio.js"]
     environment:
@@ -215,7 +287,7 @@ services:
         condition: service_completed_successfully
 
   queue-short:
-    image: ${FRAPPE_IMAGE:-frappe/erpnext}:${FRAPPE_VERSION:-v16.50.0}
+    image: ${AGILECLIX_ERP_IMAGE:-agileclix-erpnext:v16.50.0}
     restart: unless-stopped
     command: ["bench", "worker", "--queue", "short,default"]
     volumes:
@@ -226,7 +298,7 @@ services:
         condition: service_completed_successfully
 
   queue-long:
-    image: ${FRAPPE_IMAGE:-frappe/erpnext}:${FRAPPE_VERSION:-v16.50.0}
+    image: ${AGILECLIX_ERP_IMAGE:-agileclix-erpnext:v16.50.0}
     restart: unless-stopped
     command: ["bench", "worker", "--queue", "long,default,short"]
     volumes:
@@ -237,7 +309,7 @@ services:
         condition: service_completed_successfully
 
   scheduler:
-    image: ${FRAPPE_IMAGE:-frappe/erpnext}:${FRAPPE_VERSION:-v16.50.0}
+    image: ${AGILECLIX_ERP_IMAGE:-agileclix-erpnext:v16.50.0}
     restart: unless-stopped
     command: ["bench", "schedule"]
     volumes:
@@ -248,7 +320,7 @@ services:
         condition: service_completed_successfully
 
   frontend:
-    image: ${FRAPPE_IMAGE:-frappe/erpnext}:${FRAPPE_VERSION:-v16.50.0}
+    image: ${AGILECLIX_ERP_IMAGE:-agileclix-erpnext:v16.50.0}
     restart: unless-stopped
     command: ["nginx-entrypoint.sh"]
     expose:
@@ -278,6 +350,51 @@ services:
       timeout: 10s
       retries: 20
       start_period: 20s
+
+  # Headless AgileClix UI — assign a domain in Coolify (e.g. app.erp.agileclix.com → port 3000).
+  gateway:
+    build:
+      context: ./services/gateway
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    expose:
+      - "8000"
+    environment:
+      DEBUG: "false"
+      FRAPPE_BASE_URL: http://backend:8000
+      FRAPPE_SITE: ${SITE_NAME:-erp.agileclix.com}
+      CORS_ORIGINS: ${AGILECLIX_CORS_ORIGINS:-https://erp.agileclix.com,http://localhost:3000}
+      SERVICE_URL_GATEWAY_8000: ${SERVICE_URL_GATEWAY:-}
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+      # NEXT_PUBLIC_* are compiled into the browser bundle, so they must be build arguments.
+      args:
+        NEXT_PUBLIC_GATEWAY_URL: ${AGILECLIX_GATEWAY_PUBLIC_URL:-https://api.erp.agileclix.com}
+        NEXT_PUBLIC_FRAPPE_DESK_URL: ${AGILECLIX_FRAPPE_DESK_URL:-https://erp.agileclix.com/desk}
+    restart: unless-stopped
+    expose:
+      - "3000"
+    environment:
+      # Server-side calls stay on the internal network instead of going out to the public domain.
+      GATEWAY_INTERNAL_URL: http://gateway:8000
+      NEXT_PUBLIC_GATEWAY_URL: ${AGILECLIX_GATEWAY_PUBLIC_URL:-https://api.erp.agileclix.com}
+      NEXT_PUBLIC_FRAPPE_DESK_URL: ${AGILECLIX_FRAPPE_DESK_URL:-https://erp.agileclix.com/desk}
+      SERVICE_URL_WEB_3000: ${SERVICE_URL_WEB:-}
+    depends_on:
+      gateway:
+        condition: service_healthy
 
 volumes:
   db-data:

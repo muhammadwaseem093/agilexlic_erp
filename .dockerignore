@@ -1,0 +1,16 @@
+.git
+.github
+.env
+*.pyc
+__pycache__
+node_modules
+.venv
+.cursor
+agent-tools
+terminals
+erpnext
+banking
+apps/web
+services/gateway
+docs
+platform

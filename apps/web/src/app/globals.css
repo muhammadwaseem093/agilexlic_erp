@@ -1,0 +1,101 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Brand colours, font and radius (--ac-*) are injected by the root layout from src/brand.
+ * shadcn/ui semantic tokens below are mapped onto them, so every component follows the brand.
+ */
+:root {
+  color-scheme: light;
+  --background: var(--ac-background);
+  --foreground: var(--ac-text);
+  --card: var(--ac-surface);
+  --card-foreground: var(--ac-text);
+  --popover: var(--ac-surface);
+  --popover-foreground: var(--ac-text);
+  --primary: var(--ac-primary);
+  --primary-foreground: #ffffff;
+  --secondary: color-mix(in srgb, var(--ac-primary) 8%, var(--ac-surface));
+  --secondary-foreground: var(--ac-text);
+  --muted: color-mix(in srgb, var(--ac-muted) 10%, var(--ac-surface));
+  --muted-foreground: var(--ac-muted);
+  --accent: color-mix(in srgb, var(--ac-primary) 10%, var(--ac-surface));
+  --accent-foreground: var(--ac-text);
+  --destructive: var(--ac-accent);
+  --border: var(--ac-border);
+  --input: var(--ac-border);
+  --ring: var(--ac-primary);
+  --radius: var(--ac-radius);
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: var(--ac-font);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--ac-sidebar);
+  --color-sidebar-hover: var(--ac-sidebar-hover);
+  --color-brand-deep: var(--ac-primary-deep);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    margin: 0;
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+.ac-brand-rule {
+  height: 3px;
+  background: linear-gradient(90deg, var(--ac-accent) 0 60%, var(--ac-primary) 60% 100%);
+}
+
+/* Progress ring around the brand logo (see BrandLoader); mirrors the Desk loader. */
+.ac-loader-ring {
+  background: conic-gradient(from 0deg, transparent 0 20%, var(--ac-accent) 55%, var(--ac-primary) 100%);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
+  box-shadow: inset 0 0 0 4px color-mix(in srgb, var(--ac-border) 70%, transparent);
+  animation: ac-loader-spin 0.9s linear infinite;
+}
+
+@keyframes ac-loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ac-loader-ring {
+    animation-duration: 2.4s;
+  }
+}

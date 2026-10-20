@@ -1,0 +1,174 @@
+/*
+ * Brand loader: the logo with a spinning progress ring around it.
+ * Pure CSS so it also works on the server-rendered splash before any script runs.
+ * Logo and colours come from agileclix_brand.css (brand/brand.json).
+ *
+ * Used by:
+ *   .splash                     Desk start-up screen (Frappe template)
+ *   #freeze .freeze-message     blocking operations (save, submit, frappe.freeze)
+ *   .ac-loader                  background-request indicator (agileclix_branding.js)
+ */
+
+@keyframes ac-loader-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes ac-loader-pulse {
+	50% {
+		transform: scale(0.94);
+	}
+}
+
+/* ---- shared geometry: ::before = ring, ::after = logo ---- */
+.ac-loader,
+.splash,
+#freeze .freeze-message {
+	--ac-loader-size: 88px;
+	--ac-loader-stroke: 4px;
+}
+
+.ac-loader::before,
+.splash::before,
+#freeze .freeze-message::before {
+	content: "";
+	position: absolute;
+	width: var(--ac-loader-size);
+	height: var(--ac-loader-size);
+	border-radius: 50%;
+	background: conic-gradient(
+		from 0deg,
+		transparent 0 20%,
+		var(--ac-accent) 55%,
+		var(--ac-primary) 100%
+	);
+	/* Hollow the disc into a ring of --ac-loader-stroke width. */
+	-webkit-mask: radial-gradient(
+		farthest-side,
+		transparent calc(100% - var(--ac-loader-stroke)),
+		#000 calc(100% - var(--ac-loader-stroke))
+	);
+	mask: radial-gradient(
+		farthest-side,
+		transparent calc(100% - var(--ac-loader-stroke)),
+		#000 calc(100% - var(--ac-loader-stroke))
+	);
+	box-shadow: inset 0 0 0 var(--ac-loader-stroke) color-mix(in srgb, var(--ac-border) 70%, transparent);
+	animation: ac-loader-spin 0.9s linear infinite;
+}
+
+.ac-loader::after,
+#freeze .freeze-message::after {
+	content: "";
+	position: absolute;
+	width: calc(var(--ac-loader-size) * 0.62);
+	height: calc(var(--ac-loader-size) * 0.62);
+	background: var(--ac-logo) center / contain no-repeat;
+	animation: ac-loader-pulse 1.8s ease-in-out infinite;
+}
+
+/* ---- 1. Start-up splash ---- */
+.splash {
+	position: fixed;
+	inset: 0;
+	/* Frappe's .centered adds translate(-50%, -50%), which would push a full-screen splash off-screen. */
+	transform: none !important;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--ac-background);
+	z-index: 1050;
+	--ac-loader-size: 112px;
+}
+
+.splash img {
+	width: calc(var(--ac-loader-size) * 0.62) !important;
+	height: calc(var(--ac-loader-size) * 0.62);
+	max-width: none !important;
+	object-fit: contain;
+	animation: ac-loader-pulse 1.8s ease-in-out infinite;
+}
+
+/* ---- 2. Blocking operations (frappe.freeze) ---- */
+#freeze.modal-backdrop.in {
+	background: color-mix(in srgb, var(--ac-background) 72%, transparent);
+	backdrop-filter: blur(2px);
+	opacity: 1;
+}
+
+#freeze .freeze-message-container {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+}
+
+#freeze .freeze-message {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-start;
+	min-width: var(--ac-loader-size);
+	padding-top: calc(var(--ac-loader-size) + 1rem);
+	color: var(--ac-text);
+}
+
+#freeze .freeze-message::before,
+#freeze .freeze-message::after {
+	top: 0;
+	left: 50%;
+	translate: -50% 0;
+}
+
+#freeze .freeze-message::after {
+	top: calc(var(--ac-loader-size) * 0.19);
+}
+
+#freeze .freeze-message .lead {
+	font-size: 0.9rem;
+	font-weight: 500;
+	margin: 0;
+}
+
+/* ---- 3. Background requests: non-blocking floating indicator ---- */
+.ac-loader {
+	--ac-loader-size: 44px;
+	--ac-loader-stroke: 3px;
+	position: fixed;
+	top: 14px;
+	left: 50%;
+	z-index: 1060;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: calc(var(--ac-loader-size) + 12px);
+	height: calc(var(--ac-loader-size) + 12px);
+	border-radius: 50%;
+	background: var(--ac-surface);
+	box-shadow: 0 8px 24px color-mix(in srgb, var(--ac-sidebar) 18%, transparent);
+	pointer-events: none;
+	opacity: 0;
+	transform: translate(-50%, -8px) scale(0.9);
+	transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.ac-loader.is-active {
+	opacity: 1;
+	transform: translate(-50%, 0) scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ac-loader::before,
+	.splash::before,
+	#freeze .freeze-message::before {
+		animation-duration: 2.4s;
+	}
+
+	.ac-loader::after,
+	.splash img,
+	#freeze .freeze-message::after {
+		animation: none;
+	}
+}

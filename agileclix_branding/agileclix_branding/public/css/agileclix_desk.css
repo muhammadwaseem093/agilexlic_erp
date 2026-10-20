@@ -1,0 +1,414 @@
+/* AgileClix ERP — full Desk UX (login → internal screens) | ZentoriLabs */
+:root {
+	--ac-primary: #2563eb;
+	--ac-primary-dark: #1d4ed8;
+	--ac-primary-soft: rgba(37, 99, 235, 0.12);
+	--ac-accent: #0d9488;
+	--ac-sidebar: #0f172a;
+	--ac-sidebar-hover: #1e293b;
+	--ac-red: #e42424;
+	--ac-surface: #f8fafc;
+	--ac-card: #ffffff;
+	--ac-navy: #0f172a;
+	--ac-muted: #64748b;
+	--ac-border: #e2e8f0;
+	--ac-radius: 10px;
+	--ac-radius-sm: 8px;
+	--ac-shadow: 0 4px 24px rgba(15, 23, 42, 0.06);
+	--primary: var(--ac-primary);
+	--btn-primary: var(--ac-primary);
+	--border-color: var(--ac-border);
+	--heading-color: var(--ac-navy);
+	--text-color: var(--ac-navy);
+	--text-muted: var(--ac-muted);
+	--bg-color: var(--ac-surface);
+	--awesomplete-hover-bg: var(--ac-primary);
+	--scrollbar-thumb: #cbd5e1;
+	--scrollbar-track: #f1f5f9;
+}
+
+html.agileclix-branded {
+	scroll-behavior: smooth;
+}
+
+body.agileclix-branded {
+	font-family: Inter, "Segoe UI", system-ui, sans-serif;
+	-webkit-font-smoothing: antialiased;
+}
+
+/* ========== LOGIN / WEBSITE ========== */
+body[data-path="login"],
+body[data-path="login"] .for-login,
+.for-login {
+	background: linear-gradient(145deg, #0f172a 0%, #1e3a5f 38%, #f8fafc 38%, #f1f5f9 100%) !important;
+	min-height: 100vh;
+}
+
+body[data-path="login"] .page-content-wrapper,
+.for-login .page-content-wrapper {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 100vh;
+}
+
+body[data-path="login"] .page-card,
+.for-login .page-card {
+	border-radius: 16px;
+	border: 1px solid var(--ac-border);
+	box-shadow: 0 24px 64px rgba(15, 23, 42, 0.12);
+	max-width: 420px;
+	padding: 2rem 2rem 1.75rem;
+}
+
+body[data-path="login"] .page-card-head,
+.for-login .page-card-head {
+	margin-bottom: 1.25rem;
+}
+
+body[data-path="login"] .page-card-head img,
+.for-login .page-card-head img {
+	max-height: 88px;
+	width: auto;
+	object-fit: contain;
+}
+
+body[data-path="login"] .page-card-head::after,
+.for-login .page-card-head::after {
+	content: "Work Smarter. Grow Faster.";
+	display: block;
+	margin-top: 0.65rem;
+	font-size: 0.9rem;
+	color: var(--ac-muted);
+	font-weight: 500;
+}
+
+body[data-path="login"] .page-card-head::before,
+.for-login .page-card-head::before {
+	content: "ZentoriLabs";
+	display: block;
+	font-size: 0.7rem;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--ac-accent);
+	font-weight: 600;
+	margin-bottom: 0.35rem;
+}
+
+body[data-path="login"] .form-control,
+.for-login .form-control {
+	border-radius: var(--ac-radius-sm);
+	border-color: var(--ac-border);
+	padding: 0.55rem 0.75rem;
+}
+
+body[data-path="login"] .form-control:focus,
+.for-login .form-control:focus {
+	border-color: var(--ac-primary);
+	box-shadow: 0 0 0 3px var(--ac-primary-soft);
+}
+
+body[data-path="login"] .btn-primary,
+.for-login .btn-primary {
+	background: var(--ac-primary);
+	border-color: var(--ac-primary-dark);
+	border-radius: var(--ac-radius-sm);
+	font-weight: 600;
+	padding: 0.55rem 1rem;
+}
+
+body[data-path="login"] .btn-primary:hover,
+.for-login .btn-primary:hover {
+	background: var(--ac-primary-dark);
+}
+
+body[data-path="login"] .forgot-password-message a,
+.for-login a {
+	color: var(--ac-primary);
+	font-weight: 500;
+}
+
+/* ========== TOP NAVBAR ========== */
+header.navbar {
+	background: var(--ac-sidebar) !important;
+	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+	border-bottom: 3px solid transparent;
+	border-image: linear-gradient(
+			90deg,
+			var(--ac-red) 0%,
+			var(--ac-red) 40%,
+			var(--ac-primary) 40%,
+			var(--ac-primary) 100%
+		)
+		1;
+}
+
+header.navbar .navbar-nav .nav-link,
+header.navbar .dropdown-item,
+header.navbar .search-bar .awesomplete input,
+header.navbar .es-icon,
+header.navbar .notifications-icon {
+	color: #f8fafc !important;
+}
+
+header.navbar .search-bar {
+	background: rgba(255, 255, 255, 0.1);
+	border-radius: var(--ac-radius-sm);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.navbar .navbar-home img,
+.navbar .app-logo img,
+.desk-sidebar .sidebar-brand img,
+header.navbar .navbar-brand img {
+	max-height: 34px;
+	object-fit: contain;
+}
+
+/* ========== DESK SIDEBAR ========== */
+.desk-sidebar,
+.list-sidebar {
+	background: var(--ac-sidebar) !important;
+	border-right: 1px solid #1e293b;
+}
+
+.desk-sidebar .desk-sidebar-item,
+.desk-sidebar .sidebar-item,
+.list-sidebar .sidebar-item {
+	border-radius: var(--ac-radius-sm);
+	margin: 2px 8px;
+	color: #cbd5e1 !important;
+}
+
+.desk-sidebar .desk-sidebar-item:hover,
+.desk-sidebar .sidebar-item:hover,
+.list-sidebar .sidebar-item:hover {
+	background: var(--ac-sidebar-hover) !important;
+	color: #fff !important;
+}
+
+.desk-sidebar .sidebar-item.selected,
+.desk-sidebar .desk-sidebar-item.selected,
+.list-sidebar .sidebar-item.selected {
+	background: var(--ac-primary-soft) !important;
+	border-left: 3px solid var(--ac-primary);
+	color: #fff !important;
+}
+
+.desk-sidebar .sidebar-item-label,
+.desk-sidebar-item .item-anchor {
+	font-weight: 500;
+}
+
+/* ========== MAIN LAYOUT ========== */
+.layout-main-section,
+.layout-main-section-wrapper {
+	background: var(--ac-surface) !important;
+}
+
+.frappe-card,
+.page-container,
+.layout-main .layout-main-section.frappe-card {
+	border-radius: var(--ac-radius);
+	border: 1px solid var(--ac-border);
+	box-shadow: var(--ac-shadow);
+	background: var(--ac-card);
+}
+
+/* ========== PAGE HEAD / BREADCRUMBS ========== */
+.page-head {
+	border-bottom: 1px solid var(--ac-border);
+	padding-bottom: 0.75rem;
+	margin-bottom: 1rem;
+}
+
+.page-head .page-title,
+.page-head h3,
+.page-title .title-text {
+	color: var(--ac-navy) !important;
+	font-weight: 700 !important;
+	letter-spacing: -0.02em;
+}
+
+.page-head .indicator-pill,
+.page-head .badge {
+	border-radius: 999px;
+}
+
+.breadcrumb-item a {
+	color: var(--ac-primary);
+}
+
+/* ========== APP LAUNCHER / WORKSPACE ========== */
+.widget-group .widget-group-head,
+.widget-group .widget-group-title {
+	color: var(--ac-navy);
+	font-weight: 700;
+}
+
+.shortcut-widget-box,
+.dashboard-widget-box,
+.widget {
+	border-radius: var(--ac-radius);
+	border: 1px solid var(--ac-border);
+	transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.shortcut-widget-box:hover,
+.dashboard-widget-box:hover {
+	box-shadow: var(--ac-shadow);
+	transform: translateY(-1px);
+}
+
+.widget-group .widget-head {
+	border-bottom-color: var(--ac-primary-soft);
+}
+
+#agileclix-desk-badge {
+	margin: 0 0 1.25rem !important;
+}
+
+/* ========== LIST VIEW ========== */
+.list-row-container .list-row-head {
+	background: var(--ac-card);
+	border-bottom: 2px solid var(--ac-primary-soft);
+	font-weight: 600;
+	color: var(--ac-navy);
+}
+
+.list-row {
+	border-radius: var(--ac-radius-sm);
+	margin-bottom: 2px;
+}
+
+.list-row:hover {
+	background: var(--ac-primary-soft) !important;
+}
+
+.list-row .list-subject a {
+	color: var(--ac-navy);
+	font-weight: 500;
+}
+
+.list-paging-area {
+	border-top: 1px solid var(--ac-border);
+}
+
+/* ========== FORMS ========== */
+.form-grid,
+.form-section,
+.form-dashboard-section {
+	border-radius: var(--ac-radius);
+}
+
+.frappe-control .control-label {
+	font-weight: 600;
+	color: var(--ac-navy);
+}
+
+.frappe-control .control-input,
+.form-control,
+.input-with-feedback {
+	border-radius: var(--ac-radius-sm) !important;
+	border-color: var(--ac-border) !important;
+}
+
+.frappe-control .control-input:focus-within,
+.form-control:focus {
+	border-color: var(--ac-primary) !important;
+	box-shadow: 0 0 0 3px var(--ac-primary-soft) !important;
+}
+
+.form-tabs-list .nav-link.active {
+	border-bottom-color: var(--ac-primary) !important;
+	color: var(--ac-primary) !important;
+	font-weight: 600;
+}
+
+/* ========== BUTTONS ========== */
+.btn-primary,
+.btn.btn-primary {
+	background: var(--ac-primary);
+	border-color: var(--ac-primary-dark);
+	border-radius: var(--ac-radius-sm);
+	font-weight: 600;
+}
+
+.btn-primary:hover,
+.btn.btn-primary:hover {
+	background: var(--ac-primary-dark);
+}
+
+.btn-secondary,
+.btn-default {
+	border-radius: var(--ac-radius-sm);
+}
+
+.btn-danger {
+	border-radius: var(--ac-radius-sm);
+}
+
+a:not(.btn) {
+	color: var(--ac-primary);
+}
+
+a:not(.btn):hover {
+	color: var(--ac-primary-dark);
+}
+
+/* ========== MODALS / DROPDOWNS ========== */
+.modal-content {
+	border-radius: 12px;
+	border: 1px solid var(--ac-border);
+	box-shadow: 0 24px 48px rgba(15, 23, 42, 0.15);
+}
+
+.modal-header {
+	border-bottom-color: var(--ac-border);
+}
+
+.dropdown-menu {
+	border-radius: var(--ac-radius-sm);
+	border-color: var(--ac-border);
+	box-shadow: var(--ac-shadow);
+}
+
+.awesomplete > ul {
+	border-radius: var(--ac-radius-sm);
+	border-color: var(--ac-border);
+}
+
+/* ========== REPORTS / CHARTS ========== */
+.chart-container {
+	border-radius: var(--ac-radius);
+}
+
+.datatable .dt-scrollable {
+	border-radius: var(--ac-radius-sm);
+}
+
+/* ========== SCROLLBAR (webkit) ========== */
+.agileclix-branded ::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+.agileclix-branded ::-webkit-scrollbar-thumb {
+	background: var(--scrollbar-thumb);
+	border-radius: 4px;
+}
+
+.agileclix-branded ::-webkit-scrollbar-track {
+	background: var(--scrollbar-track);
+}
+
+/* ========== FOOTER PUBLISHER (login) ========== */
+body[data-path="login"] .page-card-actions::after,
+.for-login .page-card-actions::after {
+	content: "Powered by AgileClix ERP · ZentoriLabs";
+	display: block;
+	margin-top: 1.25rem;
+	text-align: center;
+	font-size: 0.7rem;
+	color: var(--ac-muted);
+}
