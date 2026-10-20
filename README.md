@@ -1,177 +1,86 @@
-
 <div align="center">
-    <a href="https://frappe.io/erpnext">
-	<img src="./erpnext/public/images/v16/erpnext.svg" alt="ERPNext Logo" height="80px" width="80px"/>
-    </a>
-    <h2>ERPNext</h2>
-    <div align="center">
-        <p>Powerful, Intuitive and Open-Source ERP</p>
-    </div>
-
-[![Learn on Frappe School](https://img.shields.io/badge/Frappe%20School-Learn%20ERPNext-blue?style=flat-square)](https://frappe.school)<br><br>
-[![CI](https://github.com/frappe/erpnext/actions/workflows/server-tests-mariadb.yml/badge.svg?event=schedule)](https://github.com/frappe/erpnext/actions/workflows/server-tests-mariadb.yml)
-[![docker pulls](https://img.shields.io/docker/pulls/frappe/erpnext.svg)](https://hub.docker.com/r/frappe/erpnext)
-
+	<img src="./brand/logo.png" alt="AgileClix" height="140px"/>
+	<h1>AgileClix ERP</h1>
+	<p><strong>Work Smarter. Grow Faster.</strong></p>
+	<p>One workspace for sales, purchasing, inventory, manufacturing and accounting.</p>
+	<p>
+		<a href="https://erp.agileclix.com">Live</a>
+		·
+		<a href="./docs/AGILECLIX_DEV.md">Developer guide</a>
+		·
+		<a href="#deployment">Deployment</a>
+	</p>
 </div>
 
-<div align="center">
-	<img src="./erpnext/public/images/v16/hero_image.png" alt="ERPNext Hero Image"/>
-</div>
+---
 
-<div align="center">
-	<a href="https://erpnext-demo.frappe.cloud/api/method/erpnext_demo.erpnext_demo.auth.login_demo">Live Demo</a>
-	-
-	<a href="https://frappe.io/erpnext">Website</a>
-	-
-	<a href="https://docs.frappe.io/erpnext/">Documentation</a>
-</div>
+## What it is
 
-## ERPNext
+AgileClix ERP is a complete business management system for growing companies. It covers the full operational cycle, from quotation to cash and from purchase to production, in one branded, permission-controlled workspace.
 
-100% Open-Source ERP System to help you run your business.
+## Modules
 
-### Motivation
+| Module | What it covers |
+|---|---|
+| **Selling** | Quotations, sales orders, customers, territories, price lists, pricing rules, sales partners |
+| **Buying** | Suppliers, requests for quotation, purchase orders, supplier scorecards |
+| **Accounts** | Chart of accounts, invoices, payments, bank reconciliation, taxes, financial statements |
+| **Stock** | Items, warehouses, stock movements, batches, serial numbers, reorder levels, valuation |
+| **Manufacturing** | Bills of materials, work orders, job cards, production planning, subcontracting |
+| **Projects** | Projects, tasks, timesheets, project billing |
+| **Assets** | Asset register, depreciation, maintenance, movement |
+| **Quality** | Quality goals, procedures, inspections, non-conformance |
+| **CRM** | Leads, opportunities, campaigns, contracts |
+| **Support** | Issues, service level agreements, warranty claims |
+| **Portal** | Self-service access for customers and suppliers |
+| **Platform** | Users and roles, workflows, printing, email, data import, integrations, automation |
 
-Running a business is a complex task - handling invoices, tracking stock, managing personnel, and other daily operations. In a market where software is sold separately to manage each of these tasks, ERPNext does all of the above and more, for free.
+Planned AgileClix products: **Dealer Management (DMS)** and **Vendor Management (VMS)**.
 
-### Key Features
+## Highlights
 
-- **Accounting**: All the tools you need to manage cash flow in one place, right from recording transactions to summarizing and analyzing financial reports.
-- **Order Management**: Track inventory levels, replenish stock, and manage sales orders, customers, suppliers, shipments, deliverables, and order fulfillment.
-- **Manufacturing**: Simplifies the production cycle, helps track material consumption, exhibits capacity planning, handles subcontracting, and more!
-- **Asset Management**: From purchase to disposal, IT infrastructure to equipment. Covers every branch of your organization, all in one centralized system.
-- **Projects**: Deliver both internal and external projects on time, budget and profitability. Track tasks, timesheets, and issues by project.
+- **White-label branding.** Name, logo, colours, font and wording come from one file, [`brand/brand.json`](brand/brand.json). Run `python brand/apply.py` and every screen follows.
+- **Modern UI.** A shadcn-style design layer across the desk, a branded loader, and an app launcher with module cards.
+- **Multi-company access control.** Roles decide what a user can do; user permissions limit which company's data they see.
+- **Headless web app** (`apps/web`): Next.js, Tailwind CSS, shadcn/ui, zod and Sonner, served through an API gateway (`services/gateway`).
+- **One-command deployment** with Docker Compose, ready for Coolify.
 
-<details open>
+## Repository layout
 
-<summary>More</summary>
-	<img src="https://erpnext.com/files/v16_bom.png"/>
-	<img src="https://erpnext.com/files/v16_stock_summary.png"/>
-	<img src="https://erpnext.com/files/v16_job_card.png"/>
-	<img src="https://erpnext.com/files/v16_tasks.png"/>
-</details>
+| Path | Purpose |
+|---|---|
+| `brand/` | Brand source of truth (`brand.json`, logo) and the `apply.py` sync script |
+| `frappe_apps/agileclix_erp/` | AgileClix app: branding, desk UI layer, loader, app launcher, gateway APIs |
+| `apps/web/` | Next.js headless web app |
+| `services/gateway/` | API gateway between the web app and the ERP backend |
+| `docker-compose.yml`, `Dockerfile` | Production stack and ERP image |
+| `docs/` | Developer guide and architecture notes |
 
-### Under the Hood
+## Deployment
 
-- [**Frappe Framework**](https://github.com/frappe/frappe): A full-stack web application framework written in Python and JavaScript. The framework provides a robust foundation for building web applications, including a database abstraction layer, user authentication, and a REST API.
+The production stack runs on Docker Compose and is ready for **Coolify**. The step-by-step runbook, covering domains, environment and first deploy, is the header of [`docker-compose.yml`](docker-compose.yml). Backups and redeploy notes are in [`docs/AGILECLIX_DEV.md`](docs/AGILECLIX_DEV.md).
 
-- [**Frappe UI**](https://github.com/frappe/frappe-ui): A Vue-based UI library, to provide a modern user interface. The Frappe UI library provides a variety of components that can be used to build single-page applications on top of the Frappe Framework.
+Run locally:
 
-## Production Setup
-
-### Managed Hosting
-
-You can try [Frappe Cloud](https://frappecloud.com), a simple, user-friendly, and sophisticated [open-source](https://github.com/frappe/press) platform to host Frappe applications reliably and securely.
-
-It handles installation, setup, upgrades, monitoring, maintenance, and support of your Frappe deployments. It is a fully featured developer platform with an ability to manage and control multiple Frappe deployments.
-
-<div>
-	<a href="https://erpnext-demo.frappe.cloud/app/home" target="_blank" rel="noopener noreferrer">
-		<picture>
-			<source media="(prefers-color-scheme: dark)" srcset="https://frappe.io/files/try-on-fc-white.png">
-			<img src="https://frappe.io/files/try-on-fc-black.png" alt="Try on Frappe Cloud" height="28" />
-		</picture>
-	</a>
-</div>
-
-
-### Self-Hosted
-#### Docker
-
-See [Frappe Docker Documentation](https://github.com/frappe/frappe_docker) for full documentation & FAQ on Docker setup
-
-#### Prerequisites
-
-- [Docker](https://docs.docker.com/get-docker/)
-- [Docker Compose v2](https://docs.docker.com/compose/)
-- [git](https://docs.github.com/en/get-started/getting-started-with-git/set-up-git)
-
-> For Docker basics and best practices refer to Docker's [documentation](https://docs.docker.com)
-
-### Try on your environment
-
-> **⚠️ Disposable demo only**
->
-> **This setup is intended for quick evaluation. Expect to throw the environment away.** You will not be able to install custom apps to this setup. For production deployments, custom configurations, and detailed explanations, see the full documentation.
-
-First clone the repo:
-
-```sh
-git clone https://github.com/frappe/frappe_docker
-cd frappe_docker
+```bash
+docker compose up -d --build
+# ERP: http://localhost:8080  (sign in as Administrator with SERVICE_PASSWORD_64_ADMIN from .env)
 ```
 
-Then run:
+Web app in development:
 
-```sh
-docker compose -f pwd.yml up -d
+```bash
+cd apps/web
+npm install
+npm run dev   # http://localhost:3000
 ```
-Wait for a couple of minutes for ERPNext site to be created or check the `create-site` container logs before opening browser on port `8080`. (username: `Administrator`, password: `admin`)
 
-See [Frappe Docker](https://github.com/frappe/frappe_docker/blob/main/docs/01-getting-started/03-arm64.md) for ARM based docker setup
+## Rebranding
 
+1. Edit [`brand/brand.json`](brand/brand.json) and replace `brand/logo.png`.
+2. Run `python brand/apply.py` (use `--check` in CI).
+3. Redeploy.
 
-## Development Setup
-### Manual Install
+## License and attribution
 
-The Easy Way: our install script for bench will install all dependencies (e.g. MariaDB). See https://github.com/frappe/bench for more details.
-
-New passwords will be created for the ERPNext "Administrator" user, the MariaDB root user, and the Frappe user (the script displays the passwords and saves them to ~/frappe_passwords.txt).
-
-
-### Local
-
-To setup the repository locally follow the steps mentioned below:
-
-1. Setup bench by following the [Installation Steps](https://frappeframework.com/docs/user/en/installation) and start the server
-   ```
-   bench start
-   ```
-
-2. In a separate terminal window, run the following commands:
-   ```
-   # Create a new site
-   bench new-site erpnext.localhost
-   ```
-
-3. Get the ERPNext app and install it
-   ```
-   # Get the ERPNext app
-   bench get-app https://github.com/frappe/erpnext
-
-   # Install the app
-   bench --site erpnext.localhost install-app erpnext
-   ```
-
-4. Open the URL `http://erpnext.localhost:8000/app` in your browser, you should see the app running
-
-## Learning and Community
-
-1. [Frappe School](https://school.frappe.io) - Learn Frappe Framework and ERPNext from the various courses by the maintainers or from the community.
-2. [Official documentation](https://docs.erpnext.com/) - Extensive documentation for ERPNext.
-3. [Discussion Forum](https://discuss.frappe.io/c/erpnext/6) - Engage with the community of ERPNext users and service providers.
-4. [Telegram Group](https://erpnext_public.t.me) - Get instant help from huge community of users.
-
-
-## Contributing
-
-1. [Issue Guidelines](https://github.com/frappe/erpnext/wiki/Issue-Guidelines)
-2. [Report Security Vulnerabilities](https://erpnext.com/security)
-3. [Pull Request Requirements](https://github.com/frappe/erpnext/wiki/Contribution-Guidelines)
-4. [Translations](https://crowdin.com/project/frappe)
-
-
-## Logo and Trademark Policy
-
-Please read our [Logo and Trademark Policy](TRADEMARK_POLICY.md).
-
-<br />
-<br />
-<div align="center" style="padding-top: 0.75rem;">
-	<a href="https://frappe.io" target="_blank">
-		<picture>
-			<source media="(prefers-color-scheme: dark)" srcset="https://frappe.io/files/Frappe-white.png">
-			<img src="https://frappe.io/files/Frappe-black.png" alt="Frappe Technologies" height="28"/>
-		</picture>
-	</a>
-</div>
+AgileClix ERP is built on the open-source [ERPNext](https://github.com/frappe/erpnext) and [Frappe Framework](https://github.com/frappe/frappe) projects and is distributed under the [GNU General Public License v3.0](license.txt). AgileClix is not affiliated with or endorsed by Frappe Technologies Pvt. Ltd.; "ERPNext" and "Frappe" are their trademarks (see [TRADEMARK_POLICY.md](TRADEMARK_POLICY.md)). Upstream credits are listed in [attributions.md](attributions.md).
