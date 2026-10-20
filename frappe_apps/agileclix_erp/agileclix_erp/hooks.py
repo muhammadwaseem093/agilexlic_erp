@@ -7,18 +7,29 @@ app_license = "MIT"
 
 required_apps = ["erpnext"]
 
-app_include_css = "/assets/agileclix_erp/css/agileclix_desk.css"
-app_include_js = "agileclix_branding.js"
+from agileclix_erp.brand import get_brand
+
+_brand = get_brand()
+
+# Brand tokens load first so the desk theme and branding script can read them.
+app_include_css = [
+	"/assets/agileclix_erp/css/agileclix_brand.css",
+	"/assets/agileclix_erp/css/agileclix_desk.css",
+	"/assets/agileclix_erp/css/agileclix_ui.css",
+	"/assets/agileclix_erp/css/agileclix_loader.css",
+	"/assets/agileclix_erp/css/agileclix_launcher.css",
+]
+app_include_js = ["/assets/agileclix_erp/js/agileclix_brand.js", "/assets/agileclix_erp/js/agileclix_branding.js"]
 
 # Login & website (same theme as Desk)
-web_include_css = "/assets/agileclix_erp/css/agileclix_desk.css"
-web_include_js = "agileclix_branding.js"
+web_include_css = app_include_css
+web_include_js = app_include_js
 
 boot_session = "agileclix_erp.boot.enrich_boot_session"
 after_install = ["agileclix_erp.boot.sync_branding_settings"]
 after_migrate = ["agileclix_erp.boot.sync_branding_settings"]
 
 website_context = {
-	"favicon": "/assets/agileclix_erp/images/agileclix-logo.png",
-	"splash_image": "/assets/agileclix_erp/images/agileclix-logo.png",
+	"favicon": _brand["logoUrl"],
+	"splash_image": _brand["logoUrl"],
 }

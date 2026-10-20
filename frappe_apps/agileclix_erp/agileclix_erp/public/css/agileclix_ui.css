@@ -1,0 +1,140 @@
+/*
+ * shadcn-style UI layer for Frappe Desk (Espresso design system, v16).
+ * Maps Espresso tokens to the active brand (--ac-* from agileclix_brand.css) and
+ * restyles controls, buttons and toasts. Visual only: no Desk behaviour is changed.
+ *
+ * `:root:root` outranks Espresso's plain `:root` token blocks regardless of load order.
+ */
+
+:root:root {
+	--btn-primary: var(--ac-primary);
+	--primary: var(--ac-primary);
+	--primary-color: var(--ac-primary);
+	--brand-color: var(--ac-primary);
+	--progress-bar-bg: var(--ac-primary);
+	--radius: var(--ac-radius);
+	--radius-md: var(--ac-radius);
+	--ac-ring: 0 0 0 3px color-mix(in srgb, var(--ac-primary) 22%, transparent);
+	--focus-default: var(--ac-ring);
+}
+
+/* ========== Buttons (default theme only; red/danger keeps Espresso's own) ========== */
+.es-button:not([data-theme]) {
+	--bt-solid-bg: var(--ac-primary);
+	--bt-solid-bg-hover: var(--ac-primary-dark);
+	--bt-solid-bg-active: var(--ac-primary-deep);
+	--bt-solid-fg: #ffffff;
+	--bt-focus: var(--ac-ring);
+}
+
+.es-button,
+.btn {
+	border-radius: var(--ac-radius-sm);
+	font-weight: 500;
+	transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
+}
+
+.es-button:active,
+.btn:active {
+	transform: translateY(1px);
+}
+
+.es-button:focus-visible,
+.btn:focus-visible {
+	outline: none;
+	box-shadow: var(--ac-ring) !important;
+}
+
+/* ========== Inputs ========== */
+.form-control,
+.es-input,
+input.input-with-feedback,
+select.form-control,
+textarea.form-control {
+	border: 1px solid var(--ac-border) !important;
+	background-color: var(--ac-surface) !important;
+	border-radius: var(--ac-radius-sm) !important;
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--ac-sidebar) 5%, transparent);
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-control:focus,
+.es-input:focus,
+input.input-with-feedback:focus {
+	border-color: var(--ac-primary) !important;
+	box-shadow: var(--ac-ring) !important;
+}
+
+.has-error .form-control,
+.form-control[aria-invalid="true"] {
+	border-color: var(--ac-accent) !important;
+}
+
+.control-label,
+.frappe-control .control-label {
+	font-weight: 500;
+	color: var(--ac-text);
+}
+
+.reqd::after,
+.control-label.reqd::after {
+	color: var(--ac-accent);
+}
+
+/* ========== Cards, dialogs, menus ========== */
+.frappe-card,
+.widget,
+.modal-content,
+.dropdown-menu,
+.es-popover,
+.es-menu {
+	border: 1px solid var(--ac-border);
+	border-radius: var(--ac-radius);
+	box-shadow: 0 1px 3px color-mix(in srgb, var(--ac-sidebar) 6%, transparent),
+		0 8px 24px color-mix(in srgb, var(--ac-sidebar) 6%, transparent);
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+	background-color: color-mix(in srgb, var(--ac-primary) 8%, transparent);
+	border-radius: var(--ac-radius-sm);
+}
+
+/* ========== Setup wizard / onboarding stepper ========== */
+.es-progress-bar,
+.es-stepper [data-state="active"],
+.es-stepper [data-state="complete"] {
+	--progress-bar-bg: var(--ac-primary);
+	border-color: var(--ac-primary);
+}
+
+/* ========== Toasts (Sonner look: card, border, coloured accent) ========== */
+.es-toast {
+	background: var(--ac-surface) !important;
+	color: var(--ac-text) !important;
+	border: 1px solid var(--ac-border) !important;
+	border-left: 4px solid var(--ac-primary) !important;
+	border-radius: var(--ac-radius) !important;
+	box-shadow: 0 10px 30px color-mix(in srgb, var(--ac-sidebar) 14%, transparent) !important;
+}
+
+.es-toast[data-type="success"] {
+	border-left-color: #16a34a !important;
+}
+
+.es-toast[data-type="warning"] {
+	border-left-color: #f59e0b !important;
+}
+
+.es-toast[data-type="error"] {
+	border-left-color: var(--ac-accent) !important;
+}
+
+/* ========== Links & selection ========== */
+a:not(.btn):not(.es-button):not(.dropdown-item):hover {
+	color: var(--ac-primary);
+}
+
+::selection {
+	background: color-mix(in srgb, var(--ac-primary) 22%, transparent);
+}

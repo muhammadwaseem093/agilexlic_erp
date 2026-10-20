@@ -1,0 +1,164 @@
+/* App tiles (/desk) and the module launcher (/desk/agileclix-apps). Brand tokens from agileclix_brand.css. */
+
+/* ---- App tiles: show full names instead of "AgileClix E…" ---- */
+.desktop-icon .icon-caption .icon-title {
+	white-space: normal;
+	overflow: visible;
+	text-overflow: clip;
+	max-width: 132px;
+	text-align: center;
+	line-height: 1.3;
+	font-weight: 600;
+	color: var(--ac-text);
+}
+
+.desktop-icon .icon-container {
+	border-radius: var(--ac-radius);
+	transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.desktop-icon:hover .icon-container {
+	transform: translateY(-2px);
+	box-shadow: 0 8px 20px color-mix(in srgb, var(--ac-sidebar) 14%, transparent);
+}
+
+/* ---- Launcher ---- */
+.ac-launcher {
+	padding: 0.5rem 0 2rem;
+}
+
+.ac-launcher-toolbar {
+	max-width: 420px;
+	margin-bottom: 1.5rem;
+}
+
+.ac-launcher-app + .ac-launcher-app {
+	margin-top: 2.5rem;
+}
+
+.ac-launcher-app-head {
+	display: flex;
+	align-items: center;
+	gap: 0.9rem;
+	margin-bottom: 1.1rem;
+}
+
+.ac-launcher-app-logo {
+	width: 44px;
+	height: 44px;
+	object-fit: contain;
+	padding: 4px;
+	border-radius: var(--ac-radius);
+	background: var(--ac-surface);
+	border: 1px solid var(--ac-border);
+}
+
+.ac-launcher-app-title {
+	margin: 0;
+	font-size: 1.15rem;
+	font-weight: 600;
+	color: var(--ac-text);
+}
+
+.ac-launcher-app-summary {
+	margin: 0.15rem 0 0;
+	font-size: 0.85rem;
+	color: var(--ac-muted);
+}
+
+.ac-launcher-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+	gap: 1rem;
+}
+
+.ac-launcher-card {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.5rem;
+	padding: 1.1rem 1.15rem;
+	text-align: left;
+	background: var(--ac-surface);
+	color: var(--ac-text);
+	border: 1px solid var(--ac-border);
+	border-radius: var(--ac-radius);
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--ac-sidebar) 5%, transparent);
+	cursor: pointer;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.ac-launcher-card:hover {
+	border-color: color-mix(in srgb, var(--ac-primary) 45%, var(--ac-border));
+	box-shadow: 0 10px 28px color-mix(in srgb, var(--ac-sidebar) 10%, transparent);
+	transform: translateY(-2px);
+}
+
+.ac-launcher-card:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--ac-primary) 25%, transparent);
+}
+
+.ac-launcher-card-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	border-radius: calc(var(--ac-radius) - 2px);
+	background: color-mix(in srgb, var(--ac-primary) 10%, transparent);
+	color: var(--ac-primary);
+	--icon-stroke: var(--ac-primary);
+}
+
+.ac-launcher-card-title {
+	font-size: 0.98rem;
+	font-weight: 600;
+}
+
+.ac-launcher-card-desc {
+	font-size: 0.82rem;
+	line-height: 1.45;
+	color: var(--ac-muted);
+}
+
+.ac-launcher-card-features {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.35rem;
+	margin: 0.15rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.ac-launcher-card-features li {
+	font-size: 0.72rem;
+	padding: 0.15rem 0.5rem;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--ac-muted) 10%, transparent);
+	color: var(--ac-text);
+}
+
+.ac-launcher-card-open {
+	margin-top: auto;
+	padding-top: 0.35rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--ac-primary);
+}
+
+.ac-launcher-empty {
+	margin-top: 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ac-launcher-card,
+	.desktop-icon .icon-container {
+		transition: none;
+	}
+
+	.ac-launcher-card:hover,
+	.desktop-icon:hover .icon-container {
+		transform: none;
+	}
+}

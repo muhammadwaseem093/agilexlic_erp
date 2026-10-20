@@ -15,4 +15,4 @@ where = ["."]
 include = ["agileclix_erp*"]
 
 [tool.setuptools.package-data]
-agileclix_erp = ["public/**/*"]
+agileclix_erp = ["public/**/*", "brand.json"]

@@ -1,0 +1,56 @@
+{
+  "name": "AgileClix ERP",
+  "shortName": "AgileClix",
+  "platformName": "AgileClix Platform",
+  "tagline": "Work Smarter. Grow Faster.",
+  "description": "One workspace for sales, inventory, accounting, and operations.",
+  "publisher": "AgileClix",
+  "logo": "logo.png",
+  "font": {
+    "family": "Inter",
+    "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+  },
+  "radius": "10px",
+  "colors": {
+    "light": {
+      "primary": "#1565e8",
+      "primaryDark": "#0f4fc0",
+      "primaryDeep": "#123a8f",
+      "accent": "#e31b23",
+      "sidebar": "#0b1f4b",
+      "sidebarHover": "#142c63",
+      "background": "#f5f7fb",
+      "surface": "#ffffff",
+      "text": "#0b1f4b",
+      "muted": "#5b6b86",
+      "border": "#e3e8f0"
+    },
+    "dark": {
+      "primary": "#4d8df5",
+      "primaryDark": "#2f74ee",
+      "primaryDeep": "#123a8f",
+      "accent": "#f0464d",
+      "sidebar": "#0b1f4b",
+      "sidebarHover": "#142c63",
+      "background": "#0a1226",
+      "surface": "#111c36",
+      "text": "#e8edf7",
+      "muted": "#95a3bd",
+      "border": "#22304f"
+    }
+  },
+  "replace": {
+    "Frappe Framework": "AgileClix Platform",
+    "Frappe HR": "AgileClix HR",
+    "ERPNext": "AgileClix ERP",
+    "Frappe": "AgileClix"
+  },
+  "upstreamLinkMarkers": [
+    "frappe.io",
+    "erpnext.com",
+    "frappe.school",
+    "discuss.",
+    "github.com/frappe"
+  ],
+  "logoUrl": "/assets/agileclix_erp/images/brand-logo.png"
+}

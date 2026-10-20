@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMoon, faSun } from "@fortawesome/free-solid-svg-icons";
+import { Button } from "@/components/ui/button";
 
 type Theme = "light" | "dark";
 
@@ -16,19 +19,20 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <button
-        type="button"
-        className="fixed bottom-4 right-4 z-50 rounded-full border border-[var(--ac-border)] bg-[var(--ac-surface)] px-3 py-2 text-xs font-medium shadow-md"
+      <Button
+        variant="outline"
+        size="icon"
+        className="fixed right-4 bottom-4 z-50 rounded-full shadow-md"
         onClick={() => {
           const next = theme === "light" ? "dark" : "light";
           setTheme(next);
           document.documentElement.classList.toggle("dark", next === "dark");
           window.localStorage.setItem("agileclix-theme", next);
         }}
-        aria-label="Toggle theme"
+        aria-label={theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
       >
-        {theme === "light" ? "Dark" : "Light"}
-      </button>
+        <FontAwesomeIcon icon={theme === "light" ? faMoon : faSun} />
+      </Button>
       {children}
     </>
   );

@@ -1,32 +1,30 @@
-# Coolify on a Hostinger VPS — test stack for https://erp.agileclix.com
+# AgileClix ERP on Coolify (Hostinger VPS) - https://erp.agileclix.com
 #
-# Deploy (Coolify):
-#   1. Point DNS: A record erp.agileclix.com -> the VPS public IP.
-#   2. New resource -> Git repository -> this repo, branch develop.
-#      Build pack: Docker Compose. Compose file: docker-compose.yml.
-#   3. After Coolify loads the file, open Domains and set the frontend service to:
-#        https://erp.agileclix.com:8080
-#      The :8080 is the container port. Public traffic stays on 443.
-#   4. Deploy. The first run creates the MariaDB database and the ERPNext site.
-#      That usually takes 10-20 minutes. Watch the create-site logs.
-#   5. Coolify Production env (example):
-#        SITE_NAME=erp.agileclix.com
-#        SERVICE_PASSWORD_64_ADMIN=admin@erp.com
-#        SERVICE_PASSWORD_64_MARIADB=Admin@123
-#      Redeploy so admin-password-sync runs.
-#   6. Sign in at https://erp.agileclix.com (the field is labeled Email but use the username):
-#        Username: Administrator
-#        Password: SERVICE_PASSWORD_64_ADMIN only (not SERVICE_PASSWORD_64_MARIADB).
+# 1. DNS: A record erp.agileclix.com -> VPS public IP (optional: app.erp / api.erp for the web UI).
+# 2. Coolify: New resource -> Git repository -> this repo, branch develop,
+#    Build pack: Docker Compose, compose file: docker-compose.yml.
+# 3. Domains (Coolify "Domains" per service; the :port is the container port, traffic stays on 443):
+#      frontend -> https://erp.agileclix.com:8080        (required: ERP desk + login)
+#      web      -> https://app.erp.agileclix.com:3000    (optional headless UI)
+#      gateway  -> https://api.erp.agileclix.com:8000    (optional, needed by web)
+# 4. Environment (Coolify generates SERVICE_PASSWORD_64_* automatically; leave them generated):
+#      SITE_NAME=erp.agileclix.com
+#      SERVICE_PASSWORD_64_ADMIN    -> Administrator login password (see it in Coolify env)
+#      SERVICE_PASSWORD_64_MARIADB  -> MariaDB root password (never needed for login)
+#    For the web UI also set: AGILECLIX_GATEWAY_PUBLIC_URL=https://api.erp.agileclix.com
+#      AGILECLIX_HEADLESS_URL=https://app.erp.agileclix.com
+#      AGILECLIX_CORS_ORIGINS=https://erp.agileclix.com,https://app.erp.agileclix.com
+# 5. Deploy. First run creates the database and site (10-20 min; watch create-site logs).
+#    Later deploys migrate the existing site; create-site never deletes an existing site.
+# 6. Sign in at https://erp.agileclix.com as Administrator with SERVICE_PASSWORD_64_ADMIN.
 #
-# MariaDB root password (SERVICE_PASSWORD_64_MARIADB) is for the db service only, not ERP login.
-# Do not publish port 3306. The database is only reachable inside this stack.
-# Volumes db-data and sites keep the test database across redeploys.
+# Never change SERVICE_PASSWORD_64_MARIADB after the first deploy: MariaDB keeps the password the
+# db-data volume was created with, and site creation/migrations would then fail.
+# Port 3306 is never published; the database is only reachable inside this stack.
+# Volumes db-data and sites hold all business data - back them up (see docs/AGILECLIX_DEV.md).
 #
-# Builds AgileClix-branded ERPNext from ./Dockerfile (layers agileclix_branding on official erpnext).
-# Override only if you publish a prebuilt image: AGILECLIX_ERP_IMAGE=myregistry/agileclix-erpnext:v16.50.0
-#
-# Optional headless UI (web + gateway): set Coolify domains on services web:3000 and gateway:8000.
-# Env: AGILECLIX_GATEWAY_PUBLIC_URL, AGILECLIX_HEADLESS_URL (https URL of web app), AGILECLIX_FRAPPE_DESK_URL
+# Images build from ./Dockerfile (ERP + agileclix apps), ./apps/web and ./services/gateway.
+# Override only with a prebuilt image: AGILECLIX_ERP_IMAGE=myregistry/agileclix-erpnext:v16.50.0
 
 services:
   configurator:
@@ -43,8 +41,6 @@ services:
         for custom_app in agileclix_branding agileclix_erp; do
           if [ -d "apps/$${custom_app}/$${custom_app}/public" ]; then
             grep -qx "$${custom_app}" sites/apps.txt 2>/dev/null || echo "$${custom_app}" >> sites/apps.txt
-            mkdir -p "sites/assets/$${custom_app}"
-            cp -a "apps/$${custom_app}/$${custom_app}/public/." "sites/assets/$${custom_app}/"
           fi
         done
         bench set-config -g db_host "$$DB_HOST"
@@ -90,11 +86,12 @@ services:
             exit 1
           fi
         done
-        site_has_erpnext() {
-          bench --site "$$1" list-apps 2>/dev/null | grep -qx erpnext
-        }
+        # list-apps prints "app  version  branch" per line (v16), so match the first column only.
         site_has_app() {
-          bench --site "$$1" list-apps 2>/dev/null | grep -qx "$$2"
+          bench --site "$$1" list-apps 2>/dev/null | awk '{print $$1}' | grep -qx "$$2"
+        }
+        site_has_erpnext() {
+          site_has_app "$$1" erpnext
         }
         install_custom_app() {
           local app="$$1"
@@ -127,12 +124,14 @@ services:
             site_ready=1
           fi
         fi
+        if [ "$$site_ready" -eq 0 ] && [ -f "sites/$${SITE_NAME}/site_config.json" ]; then
+          # Never wipe an existing site automatically: a detection failure must not destroy data.
+          echo "ERROR: site $${SITE_NAME} exists but erpnext could not be detected; refusing to recreate it."
+          echo "Inspect with: bench --site $${SITE_NAME} list-apps"
+          exit 1
+        fi
         if [ "$$site_ready" -eq 0 ]; then
           echo "Creating site $${SITE_NAME}"
-          if [ -d "sites/$${SITE_NAME}" ]; then
-            echo "Removing incomplete site directory before new-site"
-            rm -rf "sites/$${SITE_NAME}"
-          fi
           if ! bench new-site --force \
             --mariadb-user-host-login-scope='%' \
             --admin-password="$${ADMIN_PASSWORD}" \
@@ -162,12 +161,6 @@ services:
           install_custom_app agileclix_branding || true
         fi
         bench --site "$${SITE_NAME}" migrate
-        for custom_app in agileclix_branding agileclix_erp; do
-          if [ -d "apps/$${custom_app}/$${custom_app}/public" ]; then
-            mkdir -p "sites/assets/$${custom_app}"
-            cp -a "apps/$${custom_app}/$${custom_app}/public/." "sites/assets/$${custom_app}/" || true
-          fi
-        done
         if site_has_app "$${SITE_NAME}" agileclix_erp; then
           bench --site "$${SITE_NAME}" execute agileclix_erp.boot.sync_branding_settings || true
         elif site_has_app "$${SITE_NAME}" agileclix_branding; then
@@ -183,7 +176,7 @@ services:
         echo "Site $${SITE_NAME} is ready (Administrator password matches SERVICE_PASSWORD_64_ADMIN)"
     environment:
       SITE_NAME: ${SITE_NAME:-erp.agileclix.com}
-      ADMIN_PASSWORD: ${SERVICE_PASSWORD_64_ADMIN:-admin}
+      ADMIN_PASSWORD: ${SERVICE_PASSWORD_64_ADMIN:?Set SERVICE_PASSWORD_64_ADMIN}
       DB_ROOT_PASSWORD: ${SERVICE_PASSWORD_64_MARIADB:?}
       AGILECLIX_HEADLESS_URL: ${AGILECLIX_HEADLESS_URL:-}
     volumes:
@@ -212,7 +205,7 @@ services:
         echo "Administrator password synced for $${SITE_NAME}"
     environment:
       SITE_NAME: ${SITE_NAME:-erp.agileclix.com}
-      ADMIN_PASSWORD: ${SERVICE_PASSWORD_64_ADMIN:-admin}
+      ADMIN_PASSWORD: ${SERVICE_PASSWORD_64_ADMIN:?Set SERVICE_PASSWORD_64_ADMIN}
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
@@ -386,11 +379,17 @@ services:
     build:
       context: ./apps/web
       dockerfile: Dockerfile
+      # NEXT_PUBLIC_* are compiled into the browser bundle, so they must be build arguments.
+      args:
+        NEXT_PUBLIC_GATEWAY_URL: ${AGILECLIX_GATEWAY_PUBLIC_URL:-https://api.erp.agileclix.com}
+        NEXT_PUBLIC_FRAPPE_DESK_URL: ${AGILECLIX_FRAPPE_DESK_URL:-https://erp.agileclix.com/desk}
     restart: unless-stopped
     expose:
       - "3000"
     environment:
-      NEXT_PUBLIC_GATEWAY_URL: ${AGILECLIX_GATEWAY_PUBLIC_URL:-http://localhost:8100}
+      # Server-side calls stay on the internal network instead of going out to the public domain.
+      GATEWAY_INTERNAL_URL: http://gateway:8000
+      NEXT_PUBLIC_GATEWAY_URL: ${AGILECLIX_GATEWAY_PUBLIC_URL:-https://api.erp.agileclix.com}
       NEXT_PUBLIC_FRAPPE_DESK_URL: ${AGILECLIX_FRAPPE_DESK_URL:-https://erp.agileclix.com/desk}
       SERVICE_URL_WEB_3000: ${SERVICE_URL_WEB:-}
     depends_on:

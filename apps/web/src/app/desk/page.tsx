@@ -1,85 +1,115 @@
+import Link from "next/link";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faArrowUpRightFromSquare,
+  faBoxOpen,
+  faFileInvoiceDollar,
+  faTableCellsLarge,
+  faUsers,
+  type IconDefinition,
+} from "@fortawesome/free-solid-svg-icons";
 import { AppShell } from "@/components/shell/AppShell";
-import { gatewayFetch } from "@/lib/api";
-import { ArrowUpRight, Package, Receipt, Users } from "lucide-react";
+import { GatewayStatusToast } from "@/components/feedback/GatewayStatusToast";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { gatewayFetch, healthSchema } from "@/lib/api";
+import { brand } from "@/brand";
 
-const kpis = [
-  { label: "Customers", value: "—", icon: Users, hint: "Connect gateway auth" },
-  { label: "Open orders", value: "—", icon: Package, hint: "Sales module" },
-  { label: "Invoices due", value: "—", icon: Receipt, hint: "Accounting" },
+const kpis: { label: string; value: string; icon: IconDefinition; hint: string }[] = [
+  { label: "Customers", value: "—", icon: faUsers, hint: "Connect gateway auth" },
+  { label: "Open orders", value: "—", icon: faBoxOpen, hint: "Sales module" },
+  { label: "Invoices due", value: "—", icon: faFileInvoiceDollar, hint: "Accounting" },
 ];
 
-export default async function DeskPage() {
-  let gatewayStatus = "unreachable";
+async function getGatewayStatus(): Promise<string> {
   try {
-    const health = await gatewayFetch<{ status: string }>("/health");
-    gatewayStatus = health.success ? health.data?.status ?? "ok" : "error";
+    const health = await gatewayFetch("/health", healthSchema);
+    return health.success ? (health.data?.status ?? "ok") : "error";
   } catch {
-    gatewayStatus = "unreachable";
+    return "unreachable";
   }
+}
+
+export default async function DeskPage() {
+  const gatewayStatus = await getGatewayStatus();
+  const reachable = gatewayStatus !== "unreachable" && gatewayStatus !== "error";
 
   return (
     <AppShell title="Desk">
-      <div className="mb-6 rounded-xl border border-[var(--ac-border)] bg-gradient-to-r from-[var(--ac-sidebar)] to-slate-800 p-6 text-white shadow-sm">
-        <p className="text-sm font-medium text-slate-300">Welcome back</p>
-        <h2 className="mt-1 text-2xl font-semibold tracking-tight">AgileClix workspace</h2>
-        <p className="mt-2 max-w-2xl text-sm text-slate-300">
-          Your headless command center. Modules, records, and workflows will appear here as we connect the
-          metadata engine to ERPNext.
+      <GatewayStatusToast reachable={reachable} />
+
+      <div className="relative mb-6 overflow-hidden rounded-xl bg-gradient-to-r from-sidebar via-brand-deep to-primary p-6 text-white shadow-sm">
+        <p className="text-sm font-medium text-white/80">Welcome back</p>
+        <h2 className="mt-1 text-2xl font-semibold tracking-tight">{brand.shortName} workspace</h2>
+        <p className="mt-2 max-w-2xl text-sm text-white/80">
+          Your command center. Modules, records, and workflows appear here as they come online.
         </p>
+        <div className="ac-brand-rule absolute inset-x-0 bottom-0" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        {kpis.map(({ label, value, icon: Icon, hint }) => (
-          <div
-            key={label}
-            className="rounded-xl border border-[var(--ac-border)] bg-[var(--ac-surface)] p-5 shadow-sm"
-          >
-            <div className="flex items-start justify-between">
+        {kpis.map(({ label, value, icon, hint }) => (
+          <Card key={label} className="transition-shadow hover:shadow-md">
+            <CardContent className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-[var(--ac-muted)]">{label}</p>
+                <p className="text-sm text-muted-foreground">{label}</p>
                 <p className="mt-1 text-2xl font-semibold">{value}</p>
-                <p className="mt-1 text-xs text-[var(--ac-muted)]">{hint}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
               </div>
-              <Icon className="size-5 text-[var(--ac-accent)]" aria-hidden />
-            </div>
-          </div>
+              <span className="flex size-10 items-center justify-center rounded-lg bg-accent text-primary">
+                <FontAwesomeIcon icon={icon} />
+              </span>
+            </CardContent>
+          </Card>
         ))}
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <section className="rounded-xl border border-[var(--ac-border)] bg-[var(--ac-surface)] p-5">
-          <h3 className="text-sm font-semibold">Platform status</h3>
-          <dl className="mt-3 space-y-2 text-sm">
-            <div className="flex justify-between">
-              <dt className="text-[var(--ac-muted)]">API gateway</dt>
-              <dd className="font-mono">{gatewayStatus}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-[var(--ac-muted)]">ERP engine</dt>
-              <dd>ERPNext v16</dd>
-            </div>
-          </dl>
-        </section>
-        <section className="rounded-xl border border-[var(--ac-border)] bg-[var(--ac-surface)] p-5">
-          <h3 className="text-sm font-semibold">Quick links</h3>
-          <ul className="mt-3 space-y-2 text-sm">
-            <li>
+        <Card>
+          <CardHeader>
+            <CardTitle>Platform status</CardTitle>
+            <CardDescription>Services behind this workspace</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <dl className="space-y-3 text-sm">
+              <div className="flex items-center justify-between">
+                <dt className="text-muted-foreground">API gateway</dt>
+                <dd>
+                  <Badge variant={reachable ? "success" : "destructive"}>{gatewayStatus}</Badge>
+                </dd>
+              </div>
+              <div className="flex items-center justify-between">
+                <dt className="text-muted-foreground">ERP engine</dt>
+                <dd>{brand.platformName}</dd>
+              </div>
+            </dl>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick links</CardTitle>
+            <CardDescription>Jump into your work</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-2">
+            <Button asChild>
               <a
                 href={process.env.NEXT_PUBLIC_FRAPPE_DESK_URL ?? "https://erp.agileclix.com/desk"}
-                className="inline-flex items-center gap-1 font-medium text-[var(--ac-primary)]"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Classic Frappe Desk <ArrowUpRight className="size-4" />
+                Full {brand.shortName} workspace
+                <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
               </a>
-            </li>
-            <li>
-              <a href="/apps" className="font-medium text-[var(--ac-primary)]">
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/apps">
+                <FontAwesomeIcon icon={faTableCellsLarge} />
                 Browse apps
-              </a>
-            </li>
-          </ul>
-        </section>
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </AppShell>
   );

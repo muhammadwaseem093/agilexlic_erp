@@ -1,12 +1,15 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
-COPY package.json ./
-RUN npm install
+COPY package.json package-lock.json ./
+RUN npm ci
 
 FROM node:22-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+ARG NEXT_PUBLIC_GATEWAY_URL
+ARG NEXT_PUBLIC_FRAPPE_DESK_URL
+ENV NEXT_PUBLIC_GATEWAY_URL=$NEXT_PUBLIC_GATEWAY_URL 	NEXT_PUBLIC_FRAPPE_DESK_URL=$NEXT_PUBLIC_FRAPPE_DESK_URL
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 

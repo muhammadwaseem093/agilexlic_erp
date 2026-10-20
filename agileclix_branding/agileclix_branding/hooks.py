@@ -7,16 +7,5 @@ app_license = "MIT"
 
 required_apps = ["erpnext"]
 
-app_include_css = "/assets/agileclix_branding/css/agileclix_desk.css"
-app_include_js = "agileclix_branding.js"
-web_include_css = "/assets/agileclix_branding/css/agileclix_desk.css"
-web_include_js = "agileclix_branding.js"
-
-boot_session = "agileclix_branding.boot.enrich_boot_session"
-after_install = ["agileclix_branding.boot.sync_branding_settings"]
-after_migrate = ["agileclix_branding.boot.sync_branding_settings"]
-
-website_context = {
-	"favicon": "/assets/agileclix_branding/images/agileclix-logo.png",
-	"splash_image": "/assets/agileclix_branding/images/agileclix-logo.png",
-}
+# Deprecated: branding is owned by agileclix_erp and driven by brand/brand.json.
+# This app injects nothing so it cannot override the active brand.
